@@ -1,0 +1,282 @@
+{
+  "project_info": {
+    "project_number": "37312603811",
+    "project_id": "gateguard-65994",
+    "storage_bucket": "gateguard-65994.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:28fc2d76a594dc5b8ac116",
+        "android_client_info": {
+          "package_name": "com.example.gate_guard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-i8afrq9cvulqemko5m252l8asrtcb9bn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gate_guard",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:b33535d7bd9ece038ac116",
+        "android_client_info": {
+          "package_name": "com.example.gloria"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-n4i0ssjgj791qnrosrp9it2l7olaa7fr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gloria",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:edd6a3c1f34541fa8ac116",
+        "android_client_info": {
+          "package_name": "com.example.signin_with_google"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-gsvcqj4hj3rj7udvt6rh9qsph1ossrh1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.signin_with_google",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:d99b98eba84264e58ac116",
+        "android_client_info": {
+          "package_name": "com.example.water_level_indicator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-rfhnoi4sae9m0rukhleucpp5e87mm578.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.water_level_indicator",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:cf7ed804e7dd14dd8ac116",
+        "android_client_info": {
+          "package_name": "in.smartdwelliot.complaint_portal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:a16d0bf9daf0490b8ac116",
+        "android_client_info": {
+          "package_name": "in.smartdwelliot.gloriaconnect.gloria_connect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-63ggg4n0el2p7lmsodt4hhllv1p6o1v6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.smartdwelliot.gloriaconnect.gloria_connect",
+            "certificate_hash": "161ff7e82ad33ef856663eb0ea07c30bf8dfe8ae"
+          }
+        },
+        {
+          "client_id": "37312603811-l64ifg3f175fsasumqra52lfv1q1m5qh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.smartdwelliot.gloriaconnect.gloria_connect",
+            "certificate_hash": "c37d5393f854d6e5ed750571c6ab9e577c18ddd9"
+          }
+        },
+        {
+          "client_id": "37312603811-t40jpo8ns05sbniomjhld45klchfc5fg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.smartdwelliot.gloriaconnect.gloria_connect",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-6fij9b7uhtirejm9329smvgn42cb76o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.smartdwelliot.gloriaconnect.gloriaConnect"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
