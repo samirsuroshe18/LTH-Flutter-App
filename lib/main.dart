@@ -10,6 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'config/routes/routes.dart';
 import 'firebase_options.dart';
+import 'features/sector_admin_home/bloc/auth_bloc.dart' as sector_admin_auth;
+import 'features/sector_admin_home/screens/sector_admin_home.dart';
 
 // Global navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -42,7 +44,10 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => serviceLocator<TechnicianHomeBloc>(),
-            )
+            ),
+            BlocProvider<sector_admin_auth.AuthBloc>(
+              create: (_) => serviceLocator<sector_admin_auth.AuthBloc>(),
+            ),
           ],
           child: const MyApp()
       )
@@ -91,7 +96,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Complaint Portal',
-      onGenerateRoute: AppRoutes.onGenerateRoutes,
+      onGenerateRoute: (settings) {
+        if (settings.name == '/sectorAdminHome') {
+          return MaterialPageRoute(
+            builder: (context) => BlocProvider<sector_admin_auth.AuthBloc>.value(
+              value: serviceLocator<sector_admin_auth.AuthBloc>(),
+              child: SectorAdminHome(),
+            ),
+          );
+        }
+        return AppRoutes.onGenerateRoutes(settings);
+      },
       initialRoute: '/',
     );
   }
