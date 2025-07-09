@@ -7,7 +7,7 @@ import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/widgets/assign_complaint_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -423,7 +423,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
                 if (_page == 1) {
                   data.clear();
                 }
-                data.addAll(state.response.assignComplaints as Iterable<AssignComplaint>);
+                data.addAll(state.response.technicianComplaints as Iterable<AssignComplaint>);
                 _page++;
                 _hasMore = state.response.pagination?.hasMore ?? false;
                 _isLoading = false;

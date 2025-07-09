@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:complaint_portal/constants/server_constant.dart';
+import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
+import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
+import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
 import 'package:complaint_portal/utils/api_error.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -8,98 +11,14 @@ import 'package:http/http.dart' as http;
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthRepository {
+class SuperAdminHomeRepository {
 
-  Future<UserModel> signInUser({required String email, required String password, required String role}) async {
-    try {
-      String? fcmToken = await FirebaseMessaging.instance.getToken();
-
-      final Map<String, dynamic> data = {
-        'email': email,
-        'password': password,
-        'FCMToken': fcmToken,
-        'role': role
-      };
-      const apiKey = '${ServerConstant.baseUrl}/api/v1/user/login';
-      final response = await http.post(
-        Uri.parse(apiKey),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(data),
-      );
-      debugPrint('Response Body : ${response.body}');
-      final jsonBody = jsonDecode(response.body);
-
-      if (response.statusCode == 401) {
-        throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
-      }
-
-      if (response.statusCode == 200) {
-        final accessToken = jsonBody['data']['accessToken'].toString();
-        final refreshToken = jsonBody['data']['refreshToken'].toString();
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString("accessToken", accessToken);
-        await prefs.setString("refreshToken", refreshToken);
-
-        return UserModel.fromJson(jsonBody['data']['loggedInUser']);
-      } else {
-        throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
-      }
-    } catch (e) {
-      if (e is ApiError) {
-        throw ApiError(statusCode: e.statusCode, message: e.message);
-      } else {
-        throw ApiError(message: e.toString());
-      }
-    }
-  }
-
-  Future<Map<String, dynamic>> logoutUser() async {
-
+  Future<DashboardOverview> getDashboardOverview() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
 
-      const apiKey = '${ServerConstant.baseUrl}/api/v1/user/logout';
-      final response = await http.get(
-        Uri.parse(apiKey),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-
-      final jsonBody = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        await prefs.remove("accessToken");
-        await prefs.remove("refreshMode");
-        return jsonBody;
-      } else {
-        throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
-      }
-    } catch (e) {
-      if (e is ApiError) {
-        throw ApiError(statusCode: e.statusCode, message: e.message);
-      } else {
-        throw ApiError(message: e.toString());
-      }
-    }
-  }
-
-  Future<UserModel> getUser() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
-
-      const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/get-current-user';
+      const apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/get-dashboard-overview';
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -110,7 +29,7 @@ class AuthRepository {
       final jsonBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(jsonBody['data']);
+        return DashboardOverview.fromJson(jsonBody['data']);
       } else {
         throw ApiError(
             statusCode: response.statusCode, message: jsonBody['message']);
@@ -124,33 +43,31 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> updateFCM({required String fcmToken}) async {
+  Future<SectorModel> getActiveSectors({required Map<String, dynamic> queryParams}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
 
-      final Map<String, dynamic> data = {
-        'FCMToken': fcmToken,
-      };
-
-      const apiKey = '${ServerConstant.baseUrl}/api/v1/users/update-fcm';
-      final response = await http.post(
-        Uri.parse(apiKey),
+      // Build query string using the same 'queryParams' name
+      String queryString = Uri(queryParameters: queryParams).query;
+      String apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/get-active-sectors-grouped';
+      if (queryString.isNotEmpty) {
+        apiUrl += '?$queryString';
+      }
+      final response = await http.get(
+        Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode(data),
       );
-
       final jsonBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        return jsonBody;
+        return SectorModel.fromJson(jsonBody['data']);
       } else {
         throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
+            statusCode: response.statusCode, message: jsonBody['message']);
       }
     } catch (e) {
       if (e is ApiError) {
@@ -161,17 +78,53 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> changePassword({required String oldPassword, required String newPassword}) async {
+  Future<SectorAdminModel> getAllSectorAdmins({required Map<String, dynamic> queryParams}) async {
     try {
-      final Map<String, dynamic> data = {
-        'oldPassword': oldPassword,
-        'newPassword': newPassword
-      };
-
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
 
-      const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/change-password';
+      // Build query string using the same 'queryParams' name
+      String queryString = Uri(queryParameters: queryParams).query;
+      String apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/get-sectoradmins';
+      if (queryString.isNotEmpty) {
+        apiUrl += '?$queryString';
+      }
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return SectorAdminModel.fromJson(jsonBody['data']);
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> removeSectorAdmin({required String id}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'id': id,
+      };
+
+      const apiUrl =
+          '${ServerConstant.baseUrl}/api/v1/admin/remove-sector-admin';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -180,14 +133,13 @@ class AuthRepository {
         },
         body: jsonEncode(data),
       );
-
       final jsonBody = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         return jsonBody;
       } else {
         throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
+            statusCode: response.statusCode, message: jsonBody['message']);
       }
     } catch (e) {
       if (e is ApiError) {
@@ -198,28 +150,36 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+  Future<Map<String, dynamic>> addSectorAdmin({required String userName, required String email, required String phoneNo, required String password, required String sectorType,}) async {
     try {
-      final Map<String, dynamic> data = {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> payload = {
+        'userName': userName,
         'email': email,
+        'phoneNo': phoneNo,
+        'password': password,
+        'sectorType': sectorType,
       };
 
-      const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/forgot-password';
+      String apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/create-sectoradmin';
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode(data),
+        body: jsonEncode(payload),
       );
-
       final jsonBody = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         return jsonBody;
       } else {
         throw ApiError(
-            statusCode: response.statusCode,
-            message: jsonDecode(response.body)['message']);
+            statusCode: response.statusCode, message: jsonBody['message']);
       }
     } catch (e) {
       if (e is ApiError) {

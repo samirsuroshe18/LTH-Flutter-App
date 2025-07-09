@@ -1,9 +1,14 @@
 import 'package:complaint_portal/common_widgets/error_screen.dart';
+import 'package:complaint_portal/features/auth/screens/change_password_screen.dart';
+import 'package:complaint_portal/features/auth/screens/forgot_password_screen.dart';
 import 'package:complaint_portal/features/auth/screens/login_screen.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/sector_admin_home.dart';
 import 'package:complaint_portal/features/auth/screens/splash_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/active_sectors_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/create_sector_admin_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/sector_admin_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/super_admin_home.dart';
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/screens/submit_resolution_screen.dart';
 import 'package:complaint_portal/features/technician_home/screens/technician_home.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +23,10 @@ class AppRoutes {
         return _animatedRoute(const SplashScreen(), name: '/');
       case '/login':
         return _animatedRoute(const LoginScreen(), name: '/login');
+      case '/change-password':
+        return _animatedRoute(const ChangePasswordScreen(), name: '/change-password');
+      case '/forgot-password':
+        return _animatedRoute(const ForgotPasswordScreen(), name: '/forgot-password');
       case '/super-admin-home':
         return _animatedRoute(const SuperAdminHome(), name: '/super-admin-home');
       case '/sector-admin-home':
@@ -31,7 +40,15 @@ class AppRoutes {
           return _animatedRoute(const ErrorScreen(data: {}), name: '/error');
         }
       case '/submit-resolution':
-        return _animatedRoute(SubmitResolutionScreen(data: args as AssignComplaint), name: '/error');
+        return _animatedRoute(SubmitResolutionScreen(data: args as AssignComplaint), name: '/submit-resolution');
+      case '/active-sectors-screen':
+        return _animatedRoute(const ActiveSectorsScreen(), name: '/active-sectors-screen');
+      case '/sector-admin-list-screen':
+        return _animatedRoute(const SectorAdminListScreen(), name: '/sector-admin-list-screen');
+      case '/create-sector-admin-screen':
+        return _animatedRoute(const CreateSectorAdminScreen(), name: '/create-sector-admin-screen');
+      case '/complaint-details-screen':
+        return _animatedRoute(const CreateSectorAdminScreen(), name: '/complaint-details-screen');
       default:
         return _animatedRoute(const SplashScreen(), name: '/');
     }
