@@ -96,6 +96,13 @@ final class AuthUpdateFCM extends AuthEvent {
   });
 }
 
+final class ChangePassword extends AuthEvent{
+  final String oldPassword;
+  final String newPassword;
+
+  ChangePassword({required this.oldPassword, required this.newPassword});
+}
+
 final class AuthSocietyDetails extends AuthEvent {}
 
 final class AuthGetContactEmail extends AuthEvent {}

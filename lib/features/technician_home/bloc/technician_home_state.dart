@@ -9,7 +9,7 @@ final class TechnicianHomeInitial extends TechnicianHomeState{}
 final class GetAssignComplaintsLoading extends TechnicianHomeState{}
 
 final class GetAssignComplaintsSuccess extends TechnicianHomeState{
-  final TechnicianModel response;
+  final TechnicianComplaintModel response;
   GetAssignComplaintsSuccess({required this.response});
 }
 

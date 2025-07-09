@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:complaint_portal/constants/server_constant.dart';
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/utils/api_error.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class TechnicianHomeRepository {
 
-  Future<TechnicianModel> getAssignComplaints({ required final Map<String, dynamic> queryParams}) async {
+  Future<TechnicianComplaintModel> getAssignComplaints({ required final Map<String, dynamic> queryParams}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
@@ -34,7 +34,7 @@ class TechnicianHomeRepository {
       final jsonBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        return TechnicianModel.fromJson(jsonBody['data']);
+        return TechnicianComplaintModel.fromJson(jsonBody['data']);
       } else {
         throw ApiError(
             statusCode: response.statusCode, message: jsonBody['message']);
