@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/utils/document_picker_utils.dart';
 import 'package:complaint_portal/utils/media_picker_helper.dart';
 import 'package:flutter/material.dart';

@@ -76,3 +76,33 @@ final class AuthUpdateFCMFailure extends AuthState{
 
   AuthUpdateFCMFailure( {required this.message, this.status});
 }
+
+/// For Change password
+final class ChangePasswordLoading extends AuthState{}
+
+final class ChangePasswordSuccess extends AuthState{
+  final Map<String, dynamic> response;
+  ChangePasswordSuccess({required this.response});
+}
+
+final class ChangePasswordFailure extends AuthState{
+  final String message;
+  final int? status;
+
+  ChangePasswordFailure( {required this.message, this.status});
+}
+
+/// For Forgot Password state
+final class AuthForgotPassLoading extends AuthState{}
+
+final class AuthForgotPassSuccess extends AuthState{
+  final dynamic response;
+  AuthForgotPassSuccess({this.response});
+}
+
+final class AuthForgotPassFailure extends AuthState{
+  final String message;
+  final int? status;
+
+  AuthForgotPassFailure( {required this.message, this.status});
+}

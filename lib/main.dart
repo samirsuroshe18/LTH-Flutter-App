@@ -1,4 +1,6 @@
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
 import 'package:complaint_portal/init_dependencies.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
@@ -42,7 +44,13 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => serviceLocator<TechnicianHomeBloc>(),
-            )
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<SuperAdminHomeBloc>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<SectorAdminHomeBloc>(),
+            ),
           ],
           child: const MyApp()
       )
