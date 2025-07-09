@@ -306,6 +306,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               ),
+
+                              // Forgot Password Link
+                              TextButton(
+                                onPressed: () {
+                                  // Handle forgot password
+                                  Navigator.pushNamed(context, '/forgot-password');
+                                },
+                                child: const Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    color: Color(0xFF667eea),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),

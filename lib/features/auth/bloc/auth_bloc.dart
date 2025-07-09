@@ -142,6 +142,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       }
     });
+
+    on<ChangePassword>((event, emit) async {
+      emit(ChangePasswordLoading());
+      try{
+        final Map<String, dynamic> response = await _authRepository.changePassword(oldPassword: event.oldPassword, newPassword: event.newPassword);
+        emit(ChangePasswordSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(ChangePasswordFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(ChangePasswordFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AuthForgotPassword>((event, emit) async {
+      emit(AuthForgotPassLoading());
+      try {
+        final Map<String, dynamic> response =
+        await _authRepository.forgotPassword(email: event.email);
+        emit(AuthForgotPassSuccess(response: response));
+      } catch (e) {
+        if (e is ApiError) {
+          emit(AuthForgotPassFailure(
+              message: e.message.toString(), status: e.statusCode));
+        } else {
+          emit(AuthForgotPassFailure(message: e.toString()));
+        }
+      }
+    });
   }
 
   AuthState getLatestState() {

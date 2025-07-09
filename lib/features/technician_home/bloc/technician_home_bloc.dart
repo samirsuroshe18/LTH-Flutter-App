@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/repository/technician_home_repository.dart';
 import 'package:complaint_portal/utils/api_error.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,7 +20,7 @@ class TechnicianHomeBloc extends Bloc<TechnicianHomeEvent, TechnicianHomeState> 
     on<GetAssignComplaints>((event, emit) async {
       emit(GetAssignComplaintsLoading());
       try {
-        final TechnicianModel response = await _technicianRepository.getAssignComplaints(queryParams: event.queryParams);
+        final TechnicianComplaintModel response = await _technicianRepository.getAssignComplaints(queryParams: event.queryParams);
         emit(GetAssignComplaintsSuccess(response: response));
       } catch (e) {
         if (e is ApiError) {

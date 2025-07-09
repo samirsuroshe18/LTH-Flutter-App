@@ -4,26 +4,26 @@
 
 import 'dart:convert';
 
-TechnicianModel technicianModelFromJson(String str) => TechnicianModel.fromJson(json.decode(str));
+TechnicianComplaintModel technicianModelFromJson(String str) => TechnicianComplaintModel.fromJson(json.decode(str));
 
-String technicianModelToJson(TechnicianModel data) => json.encode(data.toJson());
+String technicianModelToJson(TechnicianComplaintModel data) => json.encode(data.toJson());
 
-class TechnicianModel {
-  final List<AssignComplaint>? assignComplaints;
+class TechnicianComplaintModel {
+  final List<AssignComplaint>? technicianComplaints;
   final Pagination? pagination;
 
-  TechnicianModel({
-    this.assignComplaints,
+  TechnicianComplaintModel({
+    this.technicianComplaints,
     this.pagination,
   });
 
-  factory TechnicianModel.fromJson(Map<String, dynamic> json) => TechnicianModel(
-    assignComplaints: json["assignComplaints"] == null ? [] : List<AssignComplaint>.from(json["assignComplaints"]!.map((x) => AssignComplaint.fromJson(x))),
+  factory TechnicianComplaintModel.fromJson(Map<String, dynamic> json) => TechnicianComplaintModel(
+    technicianComplaints: json["assignComplaints"] == null ? [] : List<AssignComplaint>.from(json["assignComplaints"]!.map((x) => AssignComplaint.fromJson(x))),
     pagination: json["pagination"] == null ? null : Pagination.fromJson(json["pagination"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "assignComplaints": assignComplaints == null ? [] : List<dynamic>.from(assignComplaints!.map((x) => x.toJson())),
+    "assignComplaints": technicianComplaints == null ? [] : List<dynamic>.from(technicianComplaints!.map((x) => x.toJson())),
     "pagination": pagination?.toJson(),
   };
 }

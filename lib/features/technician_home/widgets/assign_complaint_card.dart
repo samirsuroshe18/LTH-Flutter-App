@@ -1,4 +1,4 @@
-import 'package:complaint_portal/features/technician_home/models/technician_model.dart';
+import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:flutter/material.dart';
 
 class AssignComplaintCard extends StatelessWidget {
