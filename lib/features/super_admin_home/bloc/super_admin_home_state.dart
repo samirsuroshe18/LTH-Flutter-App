@@ -50,6 +50,21 @@ final class GetSectorAdminsFailure extends SuperAdminHomeState{
   GetSectorAdminsFailure( {required this.message, this.status});
 }
 
+/// Get All Complaints
+final class GetAllComplaintsLoading extends SuperAdminHomeState{}
+
+final class GetAllComplaintsSuccess extends SuperAdminHomeState{
+  final AdminComplaintModel response;
+  GetAllComplaintsSuccess({required this.response});
+}
+
+final class GetAllComplaintsFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  GetAllComplaintsFailure( {required this.message, this.status});
+}
+
 ///remove admin
 final class RemoveSectorAdminLoading extends SuperAdminHomeState{}
 
@@ -78,4 +93,94 @@ final class AddSectorAdminFailure extends SuperAdminHomeState{
   final int? status;
 
   AddSectorAdminFailure( {required this.message, this.status});
+}
+
+/// Get Complaint Details
+final class GetComplaintDetailsLoading extends SuperAdminHomeState{}
+
+final class GetComplaintDetailsSuccess extends SuperAdminHomeState{
+  final AdminComplaint response;
+  GetComplaintDetailsSuccess({required this.response});
+}
+
+final class GetComplaintDetailsFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  GetComplaintDetailsFailure( {required this.message, this.status});
+}
+
+/// Get Complaint Details
+final class ApproveResolutionLoading extends SuperAdminHomeState{}
+
+final class ApproveResolutionSuccess extends SuperAdminHomeState{
+  final AdminComplaint response;
+  ApproveResolutionSuccess({required this.response});
+}
+
+final class ApproveResolutionFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  ApproveResolutionFailure( {required this.message, this.status});
+}
+
+/// Get Complaint Details
+final class RejectResolutionLoading extends SuperAdminHomeState{}
+
+final class RejectResolutionSuccess extends SuperAdminHomeState{
+  final AdminComplaint response;
+  RejectResolutionSuccess({required this.response});
+}
+
+final class RejectResolutionFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  RejectResolutionFailure( {required this.message, this.status});
+}
+
+/// Get Complaint Details
+final class GetSelectionTechnicianLoading extends SuperAdminHomeState{}
+
+final class GetSelectionTechnicianSuccess extends SuperAdminHomeState{
+  final List<Technician> response;
+  GetSelectionTechnicianSuccess({required this.response});
+}
+
+final class GetSelectionTechnicianFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  GetSelectionTechnicianFailure( {required this.message, this.status});
+}
+
+///assign technician
+final class AssignTechnicianLoading extends SuperAdminHomeState{}
+
+final class AssignTechnicianSuccess extends SuperAdminHomeState{
+  final AdminComplaint response;
+  AssignTechnicianSuccess({required this.response});
+}
+
+final class AssignTechnicianFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  AssignTechnicianFailure( {required this.message, this.status});
+}
+
+///assign technician
+final class ReopenCompliantLoading extends SuperAdminHomeState{}
+
+final class ReopenCompliantSuccess extends SuperAdminHomeState{
+  final AdminComplaint response;
+  ReopenCompliantSuccess({required this.response});
+}
+
+final class ReopenCompliantFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  ReopenCompliantFailure( {required this.message, this.status});
 }

@@ -1,3 +1,4 @@
+import 'package:complaint_portal/features/super_admin_home/widgets/resolution_details_dialog.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:flutter/material.dart';
 
@@ -38,7 +39,7 @@ class AssignComplaintCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  StatusChip(status: data.status ?? ''),
+                  StatusChip(status: data.resolution?.status ?? 'pending'),
                 ],
               ),
               SizedBox(height: 8),
@@ -122,9 +123,30 @@ class AssignComplaintCard extends StatelessWidget {
                 ],
               ),
 
+              if (data.resolution?.status == 'rejected' && data.resolution?.rejectedNote != null) ...[
+                SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.report_problem, size: 18, color: Colors.red[400]),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Rejection Reason: ${data.resolution?.rejectedNote}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.red[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
               if (data.status != 'Resolved') ...[
                 SizedBox(height: 16),
-                _buildActionButtons(context),
+                _buildActionButtons(context, data.resolution?.status ?? 'pending'),
               ],
             ],
           ),
@@ -133,10 +155,10 @@ class AssignComplaintCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, String status) {
     return Row(
       children: [
-        if (data.status == 'Pending')
+        if (status == 'pending')
           Expanded(
             child: ElevatedButton.icon(
               onPressed: isStartLoading ? null : onStartWork,
@@ -166,7 +188,7 @@ class AssignComplaintCard extends StatelessWidget {
             ),
           ),
 
-        if (data.status == 'In Progress' || data.status == 'Rejected')
+        if (status == 'in_progress' || status == 'rejected')
         Expanded(
           child: ElevatedButton.icon(
             onPressed: onSubmit,
@@ -187,10 +209,31 @@ class AssignComplaintCard extends StatelessWidget {
           ),
         ),
 
+        if (status == 'under_review')
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: ()=> _showResolutionDialog(context),
+            icon: Icon(Icons.check_circle, size: 18),
+            label: Text(
+              'View Resolution',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
+
         if(data.status == 'Resolved')
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: onViewResolution,
+              onPressed: ()=> _showResolutionDialog(context),
               icon: Icon(Icons.check_circle, size: 18),
               label: Text('View Resolution'),
               style: ElevatedButton.styleFrom(
@@ -205,7 +248,21 @@ class AssignComplaintCard extends StatelessWidget {
       ],
     );
   }
+
+  void _showResolutionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => ResolutionDetailsDialog(
+        imageUrl: data.resolution?.resolutionAttachment ?? '',
+        resolutionNote: data.resolution?.resolutionNote ?? '',
+        timestamp: data.resolution?.resolutionSubmittedAt,
+        isNetworkImage: true,
+        submitedOn: 'Submited At',
+      ),
+    );
+  }
 }
+
 
 String _formatTime(DateTime time) {
   final now = DateTime.now();
@@ -235,25 +292,31 @@ class StatusChip extends StatelessWidget {
     IconData icon;
 
     switch (status) {
-      case 'Pending':
+      case 'pending':
         backgroundColor = Colors.amber.withValues(alpha: 0.2);
         textColor = Colors.amber;
         text = 'Pending';
         icon = Icons.pending;
         break;
-      case 'In Progress':
+      case 'under_review':
         backgroundColor = Colors.blue.withValues(alpha: 0.2);
         textColor = Colors.blue;
-        text = 'In Progress';
+        text = 'Under Review';
         icon = Icons.work;
         break;
-      case 'Resolved':
+      case 'in_progress':
+        backgroundColor = Colors.orange.withValues(alpha: 0.2);
+        textColor = Colors.orange;
+        text = 'In Progress';
+        icon = Icons.build_circle;
+        break;
+      case 'approved':
         backgroundColor = Colors.green.withValues(alpha: 0.2);
         textColor = Colors.green;
         text = 'Resolved';
         icon = Icons.check_circle;
         break;
-      case 'Rejected':
+      case 'rejected':
         backgroundColor = Colors.red.withValues(alpha: 0.2);
         textColor = Colors.red;
         text = 'Rejected';
@@ -266,26 +329,15 @@ class StatusChip extends StatelessWidget {
         icon = Icons.help_outline;
     }
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
+    return Chip(
+      avatar: Icon(icon, size: 16, color: textColor),
+      label: Text(
+        text,
+        style: TextStyle(color: textColor),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: textColor),
-          SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ],
+      backgroundColor: backgroundColor,
+      shape: StadiumBorder(
+        side: BorderSide(color: textColor.withValues(alpha: 0.5)),
       ),
     );
   }

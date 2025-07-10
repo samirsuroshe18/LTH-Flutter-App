@@ -13,6 +13,12 @@ final class GetActiveSectors extends SuperAdminHomeEvent {
   GetActiveSectors({required this.queryParams});
 }
 
+final class GetAllComplaints extends SuperAdminHomeEvent {
+  final Map<String, dynamic> queryParams;
+
+  GetAllComplaints({required this.queryParams});
+}
+
 final class GetSectorAdmins extends SuperAdminHomeEvent {
   final Map<String, dynamic> queryParams;
 
@@ -33,4 +39,42 @@ final class AddSectorAdmin extends SuperAdminHomeEvent{
   final String sectorType;
 
   AddSectorAdmin({required this.userName, required this.email, required this.phoneNo, required this.password, required this.sectorType});
+}
+
+final class GetComplaintDetails extends SuperAdminHomeEvent {
+  final String id;
+
+  GetComplaintDetails({required this.id});
+}
+
+final class ApproveResolution extends SuperAdminHomeEvent {
+  final String id;
+
+  ApproveResolution({required this.id});
+}
+
+final class RejectResolution extends SuperAdminHomeEvent {
+  final String resolutionId;
+  final String rejectedNote;
+
+  RejectResolution({required this.resolutionId, required this.rejectedNote});
+}
+
+final class GetSelectionTechnician extends SuperAdminHomeEvent {
+  final String technicianType;
+
+  GetSelectionTechnician({required this.technicianType});
+}
+
+final class AssignTechnician extends SuperAdminHomeEvent{
+  final String complaintId;
+  final String assignedWorker;
+
+  AssignTechnician({required this.complaintId, required this.assignedWorker});
+}
+
+final class ReopenCompliant extends SuperAdminHomeEvent{
+  final String complaintId;
+
+  ReopenCompliant({required this.complaintId});
 }

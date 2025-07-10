@@ -533,6 +533,7 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
               color: Colors.green[600]!,
               onTap: () {
                 // Handle view all queries
+                Navigator.pushNamed(context, '/view-all-complaint-screen');
               },
             ),
             // _buildActionButton(

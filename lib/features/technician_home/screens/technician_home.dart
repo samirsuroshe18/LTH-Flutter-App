@@ -904,32 +904,15 @@ class _TechnicianHomeState extends State<TechnicianHome> {
 
   Widget _itemBuilder(complaint, index) {
     AssignComplaint item = complaint;
-    if(item.status == 'Pending'){
-      return StaggeredListAnimation(
-        index: index,
-        child: AssignComplaintCard(
-          data: complaint,
-          onStartWork: () => _startWork(item),
-          isStartLoading: _isStartWork,
-        ),
-      );
-    }else if(item.status == 'In Progress' || item.status == 'Rejected'){
-      return StaggeredListAnimation(
-        index: index,
-        child: AssignComplaintCard(
-          data: complaint,
-          onSubmit: () => _onSubmit(item),
-        ),
-      );
-    }else {
-      return StaggeredListAnimation(
-        index: index,
-        child: AssignComplaintCard(
-          data: complaint,
-          onViewResolution: () => showResolutionDialog(context: context, imageUrl: "", resolutionNote: "This is resolution note"),
-        ),
-      );
-    }
+    return StaggeredListAnimation(
+      index: index,
+      child: AssignComplaintCard(
+        data: complaint,
+        onStartWork: () => _startWork(item),
+        onSubmit: () => _onSubmit(item),
+        isStartLoading: _isStartWork,
+      ),
+    );
   }
 
   void _startWork(AssignComplaint data){
@@ -937,7 +920,6 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   }
 
   Future<void> _onSubmit(AssignComplaint item) async {
-    print("on submit is calling");
     final response = await Navigator.pushNamed(
       context,
       '/submit-resolution',
@@ -948,8 +930,9 @@ class _TechnicianHomeState extends State<TechnicianHome> {
       final index = data.indexWhere((e) => e.id == response.id);
 
       if (index != -1) {
-        data[index] = response;
-        setState(() {});
+        setState(() {
+          data[index] = response;
+        });
       }
     }
   }

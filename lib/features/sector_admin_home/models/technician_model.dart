@@ -91,7 +91,7 @@ class Technician {
     phoneNo: json["phoneNo"],
     email: json["email"],
     role: json["role"],
-    technicianType: json["sectorType"],
+    technicianType: json["technicianType"],
     isActive: json["isActive"],
     createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
     updatedAt: json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),

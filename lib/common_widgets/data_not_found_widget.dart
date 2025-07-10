@@ -5,7 +5,9 @@ class DataNotFoundWidget extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final String infoMessage;
   final double kToolbarCount;
-  const DataNotFoundWidget({super.key, required this.onRefresh, this.infoMessage = 'No data found', this.kToolbarCount=3});
+  final Color color;
+  final double padding;
+  const DataNotFoundWidget({super.key, required this.onRefresh, this.infoMessage = 'No data found', this.kToolbarCount=3, this.color = Colors.white, this.padding=0.0});
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +28,15 @@ class DataNotFoundWidget extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 20),
-              Text(
-                infoMessage,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: padding,),
+                child: Text(
+                  infoMessage,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

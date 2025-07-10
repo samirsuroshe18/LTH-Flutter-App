@@ -4,10 +4,14 @@ import 'package:complaint_portal/features/auth/screens/forgot_password_screen.da
 import 'package:complaint_portal/features/auth/screens/login_screen.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/sector_admin_home.dart';
 import 'package:complaint_portal/features/auth/screens/splash_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/models/AdminComplaintModel.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/active_sectors_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/admin_complaint_details_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/create_sector_admin_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/sector_admin_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/super_admin_home.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/technician_selection_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/view_all_complaints_screen.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/screens/submit_resolution_screen.dart';
 import 'package:complaint_portal/features/technician_home/screens/technician_home.dart';
@@ -48,7 +52,15 @@ class AppRoutes {
       case '/create-sector-admin-screen':
         return _animatedRoute(const CreateSectorAdminScreen(), name: '/create-sector-admin-screen');
       case '/complaint-details-screen':
-        return _animatedRoute(const CreateSectorAdminScreen(), name: '/complaint-details-screen');
+        if (args != null && args is AdminComplaint) {
+          return _animatedRoute(AdminComplaintDetailsScreen(data: args), name: '/complaint-details-screen');
+        } else {
+          return _animatedRoute(AdminComplaintDetailsScreen(complaintId: args as String, data: null,), name: '/complaint-details-screen');
+        }
+      case '/view-all-complaint-screen':
+        return _animatedRoute(const ViewAllComplaintScreen(), name: '/view-all-complaint-screen');
+      case '/tech-selection-screen':
+        return _animatedRoute(TechnicianSelectionScreen(complaint: args as AdminComplaint), name: '/tech-selection-screen');
       default:
         return _animatedRoute(const SplashScreen(), name: '/');
     }
