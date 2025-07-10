@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart';
-import '../bloc/auth_bloc.dart';
+import 'workers_list_screen.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import 'create_worker_screen.dart';
 
 class SectorAdminHome extends StatelessWidget {
@@ -44,7 +45,7 @@ class SectorAdminHome extends StatelessWidget {
                 children: [
                   _buildWelcomeSection(),
                   const SizedBox(height: 24),
-                  _buildStatsGrid(),
+                  _buildStatsGrid(context),
                   const SizedBox(height: 24),
                   _buildQuickActionsSection(context),
                   const SizedBox(height: 24),
@@ -222,7 +223,7 @@ class SectorAdminHome extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(BuildContext parentContext) {
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 16,
@@ -246,12 +247,14 @@ class SectorAdminHome extends StatelessWidget {
           bgColor: const Color(0xFFD1FAE5),
         ),
         _buildStatCard(
-          title: 'Assigned Technicians',
+          title: 'View Workers',
           value: '8',
           icon: Icons.engineering,
           color: const Color(0xFF3B82F6),
           bgColor: const Color(0xFFDBEAFE),
-        ),
+    onTap: () => _handleViewWorkers(parentContext),
+    ),
+
         _buildStatCard(
           title: 'Total Queries',
           value: '179',
@@ -269,49 +272,49 @@ class SectorAdminHome extends StatelessWidget {
     required IconData icon,
     required Color color,
     required Color bgColor,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
+            const SizedBox(height: 16),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
+            const SizedBox(height: 4),
+            Text(
               title,
               style: const TextStyle(
                 fontSize: 14,
@@ -322,8 +325,8 @@ class SectorAdminHome extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               softWrap: false,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -761,5 +764,13 @@ class SectorAdminHome extends StatelessWidget {
   void _handleViewAllActivities() {
     // Implementation for view all activities
     print('View all activities tapped');
+  }
+  void _handleViewWorkers(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const WorkersListScreen(),
+      ),
+    );
   }
 }
