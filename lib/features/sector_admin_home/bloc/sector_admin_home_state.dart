@@ -19,3 +19,22 @@ final class GetDashboardOverviewFailure extends SectorAdminHomeState{
 
   GetDashboardOverviewFailure( {required this.message, this.status});
 }
+final class CreateWorkerLoading extends SectorAdminHomeState {}
+final class CreateWorkerSuccess extends SectorAdminHomeState {
+  final Technician technician;
+  CreateWorkerSuccess({required this.technician});
+}
+final class CreateWorkerFailure extends SectorAdminHomeState {
+  final String message;
+  CreateWorkerFailure({required this.message});
+}
+
+final class GetWorkersListLoading extends SectorAdminHomeState {}
+final class GetWorkersListSuccess extends SectorAdminHomeState {
+  final List<Technician> workers;
+  GetWorkersListSuccess({required this.workers});
+}
+final class GetWorkersListFailure extends SectorAdminHomeState {
+  final String message;
+  GetWorkersListFailure({required this.message});
+}
