@@ -1,30 +1,29 @@
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
-import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
-import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
-import 'package:complaint_portal/features/super_admin_home/widgets/sector_admin_card.dart';
+import 'package:complaint_portal/features/super_admin_home/models/AdminComplaintModel.dart';
+import 'package:complaint_portal/features/super_admin_home/widgets/complaint_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
-class SectorAdminListScreen extends StatefulWidget {
-  const SectorAdminListScreen({super.key});
+class ViewAllComplaintScreen extends StatefulWidget {
+  const ViewAllComplaintScreen({super.key,});
 
   @override
-  State<SectorAdminListScreen> createState() => _SectorAdminListScreenState();
+  State<ViewAllComplaintScreen> createState() => _ViewAllComplaintScreenState();
 }
 
-class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
+class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<Sectoradmin> data = [];
+  List<AdminComplaint> data = [];
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
@@ -33,7 +32,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
   final int _limit = 10;
   bool _hasMore = true;
   String _searchQuery = '';
-  String _selectedCategory = '';
+  String _selectedStatus = '';
   DateTime? _startDate;
   DateTime? _endDate;
   bool _hasActiveFilters = false;
@@ -71,8 +70,8 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       queryParams['search'] = _searchQuery;
     }
 
-    if (_selectedCategory.isNotEmpty) {
-      queryParams['category'] = _selectedCategory;
+    if (_selectedStatus.isNotEmpty) {
+      queryParams['status'] = _selectedStatus;
     }
 
     if (_startDate != null) {
@@ -83,7 +82,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       queryParams['endDate'] = DateFormat('yyyy-MM-dd').format(_endDate!);
     }
 
-    context.read<SuperAdminHomeBloc>().add(GetSectorAdmins(queryParams: queryParams));
+    context.read<SuperAdminHomeBloc>().add(GetAllComplaints(queryParams: queryParams));
   }
 
   void _applyFilters() {
@@ -91,7 +90,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       _page = 1;
       _hasMore = true;
       data.clear();
-      _hasActiveFilters = _selectedCategory.isNotEmpty || _startDate != null || _endDate != null;
+      _hasActiveFilters = _selectedStatus.isNotEmpty || _startDate != null || _endDate != null;
     });
     _fetchEntries();
   }
@@ -135,10 +134,11 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Sectors Admins',
+          'All Queries',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -154,7 +154,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
-            isFilterButton: false,
+            isFilterButton: true,
             hasActiveFilters: _hasActiveFilters,
             onFilterPressed: () => _showFilterBottomSheet(context),
           ),
@@ -162,26 +162,28 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       ),
       body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
         listener: (context, state) {
-          if (state is GetSectorAdminsLoading) {
+          if (state is GetAllComplaintsLoading) {
             _isLoading = true;
             _isError = false;
           }
-          if (state is GetSectorAdminsSuccess) {
+          if (state is GetAllComplaintsSuccess) {
             if (_page == 1) {
               data.clear();
             }
-            data.addAll(state.response.sectoradmins as Iterable<Sectoradmin>);
+            data.addAll(state.response.adminComplaints as Iterable<AdminComplaint>);
             _page++;
             _hasMore = state.response.pagination?.hasMore ?? false;
             _isLoading = false;
             _isLazyLoading = false;
             _isError = false;
           }
-          if (state is GetSectorAdminsFailure) {
+          if (state is GetAllComplaintsFailure) {
             data = [];
             _isLoading = false;
+            _isLazyLoading = false;
             _isError = true;
-            statusCode = state.status;
+            statusCode= state.status;
+            _hasMore = false;
           }
         },
         builder: (context, state) {
@@ -189,7 +191,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<Sectoradmin>(
+                child: SinglePaginatedListView<AdminComplaint>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -201,7 +203,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<Sectoradmin>(
+                child: SinglePaginatedListView<AdminComplaint>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -214,21 +216,34 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "No data found",);
+            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no complaints", kToolbarCount: 4,);
           }
         },
       ),
     );
   }
 
+  Future<void> _cardOnTap(AdminComplaint complaint) async {
+    final updatedComplaint = await Navigator.pushNamed(context, '/complaint-details-screen', arguments: complaint);
+
+    if (updatedComplaint != null && updatedComplaint is AdminComplaint) {
+      setState(() {
+        // Replace or update only the modified item in your list
+        int index = data.indexWhere((c) => c.id == updatedComplaint.id);
+        if (index != -1) {
+          data[index] = updatedComplaint;
+        }
+      });
+    }
+  }
+
   Widget _itemBuilder(item, index) {
     return StaggeredListAnimation(
       index: index,
-      child: SectorAdminCard(
-        data: item,
-        showDeleteConfirmation: ()=> _showDeleteConfirmation(context, item
+      child: ComplaintCard(
+        complaint: item,
+        onTap: () => _cardOnTap(item),
       ),
-    )
     );
   }
 
@@ -265,7 +280,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                         TextButton(
                           onPressed: () {
                             setModalState(() {
-                              _selectedCategory = '';
+                              _selectedStatus = '';
                               _startDate = null;
                               _endDate = null;
                             });
@@ -274,9 +289,9 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    // const SizedBox(height: 8),
                     const Text(
-                      'Category',
+                      'Status',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -285,9 +300,10 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                     Wrap(
                       spacing: 8,
                       children: [
-                        _buildFilterChip('Important', 'important', setModalState),
-                        _buildFilterChip('Event', 'event', setModalState),
-                        _buildFilterChip('Maintenance', 'maintenance', setModalState),
+                        _buildFilterChip('Pending', 'Pending', setModalState),
+                        _buildFilterChip('In Progress', 'In Progress', setModalState),
+                        _buildFilterChip('Resolved', 'Resolved', setModalState),
+                        _buildFilterChip('Rejected', 'Rejected', setModalState),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -365,213 +381,20 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
   Widget _buildFilterChip(String label, String value, StateSetter setModalState) {
     return FilterChip(
       label: Text(label),
-      selected: _selectedCategory == value,
+      selected: _selectedStatus == value,
       onSelected: (selected) {
         setModalState(() {
-          _selectedCategory = selected ? value : '';
+          _selectedStatus = selected ? value : '';
         });
       },
     );
   }
 
   Future<void> _onRefresh() async {
-    _page = 1;
+    _page=1;
     await _fetchEntries();
   }
 
-  void _showDeleteConfirmation(BuildContext context, Sectoradmin sectorAdmin) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
-          listener: (context, state) {
-            if(state is RemoveSectorAdminLoading){
-              debugPrint('loading');
-            }
-            // Close dialog when deletion is complete (success or error)
-            if (state is RemoveSectorAdminSuccess) {
-              data.removeWhere((tech) => tech.id == sectorAdmin.id);
-              Navigator.pop(context);
-              // Show success snackbar
-              CustomSnackBar.show(context: context, message: '${sectorAdmin.userName} has been deleted successfully', type: SnackBarType.success);
-            } else if (state is RemoveSectorAdminFailure) {
-              debugPrint('error : ${state.message}');
-              Navigator.pop(context);
-              // Show error snackbar
-              CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
-            }
-          },
-          builder: (context, state) {
-            bool isDeleting = state is RemoveSectorAdminLoading;
-
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color.fromRGBO(255, 235, 235, 1),
-                      ),
-                      child: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Delete Technician Account',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        text: 'Are you sure you want to delete ',
-                        children: [
-                          TextSpan(
-                            text: '${sectorAdmin.userName ?? "NA"}\'s',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const TextSpan(
-                            text: ' account? This action cannot be undone.',
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: isDeleting ? null : () => Navigator.pop(context),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              backgroundColor: isDeleting ? Colors.grey[300] : Colors.grey[200],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(color: Colors.black87),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: isDeleting
-                                ? null
-                                : () {
-                              context.read<SuperAdminHomeBloc>().add(
-                                  RemoveSectorAdmin(id: sectorAdmin.id!)
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              backgroundColor: isDeleting ? Colors.red[300] : Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: isDeleting
-                                ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Deleting...',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            )
-                                : const Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _removeAdmin(String id) async {
-    if(!mounted) return;
-
-    showDialog(context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Revoke Admin Privileges', style: TextStyle(color: Colors.red)),
-          content: const Text('Are you sure you want to revoke admin privileges from this user? They will lose access to admin-level features and permissions.'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            BlocBuilder<SuperAdminHomeBloc, SuperAdminHomeState>(
-              builder: (context, state) {
-                if (state is RemoveSectorAdminLoading) {
-                  return const CircularProgressIndicator(color: Colors.red,);
-                } else if (state is RemoveSectorAdminFailure) {
-                  return TextButton(
-                    child: const Text('Revoke', style: TextStyle(color: Colors.red),),
-                    onPressed: () {
-                      context.read<SuperAdminHomeBloc>().add(RemoveSectorAdmin(id: id));
-                    },
-                  );
-                }else if (state is RemoveSectorAdminSuccess) {
-                  onPressed(){
-                    context.read<SuperAdminHomeBloc>().add(GetSectorAdmins(queryParams: {}));
-                    Navigator.of(context).pop();
-                  }
-                  return TextButton(
-                    onPressed: onPressed(),
-                    child: const Text('Revoke', style: TextStyle(color: Colors.red)),
-                  );
-                } else {
-                  return TextButton(
-                    child: const Text('Revoke', style: TextStyle(color: Colors.red)),
-                    onPressed: () {
-                      context.read<SuperAdminHomeBloc>().add(
-                        RemoveSectorAdmin(id: id),
-                      );
-                    },
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  @override
+  bool get wantKeepAlive => true;
 }
