@@ -49,6 +49,7 @@ class _ReopenButtonState extends State<ReopenButton> {
       width: widget.width,
       height: widget.height,
       margin: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.0),
         boxShadow: [

@@ -3,7 +3,6 @@ import 'package:complaint_portal/features/auth/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
-import '../widgets/auth_btn.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -51,7 +50,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: Color(0xFF2E3B4E),
+            backgroundColor: Colors.blue[700],
             foregroundColor: Colors.white,
             title: const Text(
               'Forgot Password',
@@ -96,8 +95,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           CustomTextField(
-            icon: const Icon(Icons.email),
+            icon: Icon(Icons.email, color: Colors.blue[700]),
             hintText: 'Email',
+            keyboardType: TextInputType.emailAddress,
             controller: emailController,
             errorMsg: 'Please enter your email',
             obscureText: false,
@@ -110,7 +110,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 borderRadius: BorderRadius.circular(10.0), // Border radius
               ), // Border color and width
               padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: Color(0xFF2E3B4E),
+              backgroundColor: Colors.blue[700],
             ),
             child: _isLoading
                 ? const CircularProgressIndicator()

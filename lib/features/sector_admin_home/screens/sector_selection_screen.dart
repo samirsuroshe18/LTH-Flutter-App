@@ -2,24 +2,25 @@ import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/sector_complaint_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/selection_technician_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
-class TechnicianSelectionScreen extends StatefulWidget {
-  final AdminComplaint complaint;
+class SectorSelectionScreen extends StatefulWidget {
+  final SectorComplaint complaint;
 
-  const TechnicianSelectionScreen({super.key, required this.complaint});
+  const SectorSelectionScreen({super.key, required this.complaint});
 
   @override
-  State<TechnicianSelectionScreen> createState() => _TechnicianSelectionScreenState();
+  State<SectorSelectionScreen> createState() => _SectorSelectionScreenState();
 }
 
-class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
+class _SectorSelectionScreenState extends State<SectorSelectionScreen> {
   List<Technician> data = [];
   bool _isLoading = false;
   bool _isError = false;
@@ -28,7 +29,7 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<SuperAdminHomeBloc>().add(GetSelectionTechnician(technicianType: widget.complaint.category!));
+    context.read<SectorAdminHomeBloc>().add(GetSectorSelectionTechnician(technicianType: widget.complaint.category!));
   }
 
   @override
@@ -41,19 +42,19 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
           'Select Technicians',
         ),
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
         listener: (context, state) {
-          if (state is GetSelectionTechnicianLoading) {
+          if (state is GetSectorSelectionTechnicianLoading) {
             _isLoading = true;
             _isError = false;
           }
-          if (state is GetSelectionTechnicianSuccess) {
+          if (state is GetSectorSelectionTechnicianSuccess) {
             data.clear();
             data.addAll(state.response);
             _isLoading = false;
             _isError = false;
           }
-          if (state is GetSelectionTechnicianFailure) {
+          if (state is GetSectorSelectionTechnicianFailure) {
             data = [];
             _isLoading = false;
             _isError = true;

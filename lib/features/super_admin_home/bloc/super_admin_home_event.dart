@@ -13,10 +13,10 @@ final class GetActiveSectors extends SuperAdminHomeEvent {
   GetActiveSectors({required this.queryParams});
 }
 
-final class GetAllComplaints extends SuperAdminHomeEvent {
+final class GetSupAdminComplaints extends SuperAdminHomeEvent {
   final Map<String, dynamic> queryParams;
 
-  GetAllComplaints({required this.queryParams});
+  GetSupAdminComplaints({required this.queryParams});
 }
 
 final class GetSectorAdmins extends SuperAdminHomeEvent {
@@ -31,6 +31,12 @@ final class RemoveSectorAdmin extends SuperAdminHomeEvent{
   RemoveSectorAdmin({required this.id});
 }
 
+final class DeactivateSectorAdmin extends SuperAdminHomeEvent{
+  final String id;
+
+  DeactivateSectorAdmin({required this.id});
+}
+
 final class AddSectorAdmin extends SuperAdminHomeEvent{
   final String userName;
   final String email;
@@ -41,10 +47,10 @@ final class AddSectorAdmin extends SuperAdminHomeEvent{
   AddSectorAdmin({required this.userName, required this.email, required this.phoneNo, required this.password, required this.sectorType});
 }
 
-final class GetComplaintDetails extends SuperAdminHomeEvent {
+final class GetSupComplaintDetails extends SuperAdminHomeEvent {
   final String id;
 
-  GetComplaintDetails({required this.id});
+  GetSupComplaintDetails({required this.id});
 }
 
 final class ApproveResolution extends SuperAdminHomeEvent {

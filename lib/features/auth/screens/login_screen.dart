@@ -11,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(AuthSignIn(
-        _usernameController.text.trim(),
+        _emailController.text.trim(),
         _passwordController.text.trim(),
         _selectedRole.trim().toLowerCase().replaceAll(" ", ""),
       ));
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _isLoading = true;
           }
           if(state is AuthLoginSuccess){
-            _usernameController.clear();
+            _emailController.clear();
             _passwordController.clear();
             _isLoading = false;
             if(state.response.role == "superadmin"){
@@ -147,9 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               // Username Field
                               TextFormField(
-                                controller: _usernameController,
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
-                                  labelText: 'Username',
+                                  labelText: 'Email',
                                   prefixIcon: const Icon(
                                     Icons.person_outline,
                                     color: Color(0xFF667eea),
@@ -178,6 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
+                                keyboardType: TextInputType.visiblePassword,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
                                   prefixIcon: const Icon(

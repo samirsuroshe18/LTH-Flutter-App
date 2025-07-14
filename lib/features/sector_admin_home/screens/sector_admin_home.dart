@@ -1,55 +1,390 @@
+import 'package:complaint_portal/common_widgets/build_error_state.dart';
+import 'package:complaint_portal/common_widgets/custom_loader.dart';
+import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
+import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/sector_dashboard_overview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart';
-import 'workers_list_screen.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import 'create_worker_screen.dart';
 
-class SectorAdminHome extends StatelessWidget {
+class SectorAdminHome extends StatefulWidget {
   const SectorAdminHome({super.key});
 
   @override
+  State<SectorAdminHome> createState() => _SectorAdminHomeState();
+}
+
+class _SectorAdminHomeState extends State<SectorAdminHome> {
+  SectorDashboardOverview? data;
+  bool _isLoading = false;
+  bool _isError = false;
+  int? statusCode;
+  String selectedSector = 'All Sectors';
+  String selectedTimeRange = 'Last 30 Days';
+  BuildContext? _dialogContext;
+  UserModel? user;
+
+  @override
+  void initState() {
+    super.initState();
+    final authBloc = context.read<AuthBloc>();
+    final UserModel? userState = authBloc.currentUser;
+    if (userState != null) {
+      user = userState;
+    }
+    context.read<SectorAdminHomeBloc>().add(GetSectorDashboardOverview());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthLogoutLoading) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: _buildAppBar(),
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLogoutLoading) {
+            showLoadingDialog(context);
+          }
+          if (state is AuthLogoutSuccess) {
+            Future.delayed(const Duration(seconds: 2), () {
+              dismissLoadingDialog();
+              CustomSnackBar.show(
+                context: context,
+                message: "Logout Successfully.",
+                type: SnackBarType.success,
+              );
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                    (route) => false,
+              );
+            });
+          }
+          if (state is AuthLogoutFailure) {
+            Future.delayed(const Duration(seconds: 2), () {
+              dismissLoadingDialog();
+              CustomSnackBar.show(
+                context: context,
+                message: state.message,
+                type: SnackBarType.error,
+              );
+            });
+          }
+        },
+        builder: (context, state) {
+          return BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
+            listener: (context, state) {
+              if (state is GetSectorDashboardOverviewLoading) {
+                _isLoading = true;
+                _isError = false;
+              }
+              if (state is GetSectorDashboardOverviewSuccess) {
+                data = state.response;
+                _isLoading = false;
+                _isError = false;
+              }
+              if (state is GetSectorDashboardOverviewFailure) {
+                data = null;
+                _isLoading = false;
+                _isError = true;
+                statusCode = state.status;
+                CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
+              }
+            },
+            builder: (context, state) {
+              if (data != null && _isLoading == false) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStatsSection(),
+                      SizedBox(height: 24),
+                      _buildQuickActionsSection(),
+                      SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              } else if (_isLoading) {
+                return const CustomLoader();
+              } else if (data != null && _isError == true && statusCode == 401) {
+                return BuildErrorState(onRefresh: _onRefresh);
+              } else {
+                return BuildErrorState(onRefresh: _onRefresh);
+              }
+            },
           );
-        }
-        if (state is AuthLogoutSuccess) {
-          Navigator.of(context, rootNavigator: true).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Logout Successfully.'), backgroundColor: Colors.green),
-          );
-          Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        }
-        if (state is AuthLogoutFailure) {
-          Navigator.of(context, rootNavigator: true).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
-        }
+        },
+      ),
+    );
+  }
+
+  Future<void> _onRefresh() async {
+    context.read<SectorAdminHomeBloc>().add(GetSectorDashboardOverview());
+  }
+
+  void _handleProfileMenuSelection(String value) {
+    switch (value) {
+      case 'profile':
+        _showProfileDialog();
+        break;
+      case 'change_password':
+        Navigator.pushNamed(context, '/change-password');
+        break;
+      case 'logout':
+        _showLogoutDialog();
+        break;
+    }
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.orange),
+              SizedBox(width: 12),
+              Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog first
+                context.read<AuthBloc>().add(
+                  AuthLogout(),
+                ); // Then trigger logout
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Logout'),
+            ),
+          ],
+        );
       },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
-          appBar: _buildAppBar(),
-          body: SafeArea(
+    );
+  }
+
+  void _showProfileDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        final screenSize = MediaQuery.of(context).size;
+        final isSmallScreen = screenSize.width < 400;
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 10,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: isSmallScreen ? screenSize.width * 0.9 : 400,
+            constraints: BoxConstraints(
+              maxWidth: screenSize.width * 0.9,
+              maxHeight: screenSize.height * 0.8,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  Colors.grey.shade50,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildWelcomeSection(),
-                  const SizedBox(height: 24),
-                  _buildStatsGrid(context),
-                  const SizedBox(height: 24),
-                  _buildQuickActionsSection(context),
-                  const SizedBox(height: 24),
-                  // _buildRecentActivitiesSection(),
+                  // Header Section
+                  Container(
+                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF2E3B4E),
+                          Color(0xFF3A4A5C),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Profile Avatar
+                        Container(
+                          width: isSmallScreen ? 60 : 80,
+                          height: isSmallScreen ? 60 : 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.3),
+                                Colors.white.withValues(alpha: 0.1),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.person_outline,
+                            size: isSmallScreen ? 30 : 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        Text(
+                          'Profile Information',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 20 : 24,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Your account details',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 12 : 14,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Content Section
+                  Padding(
+                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildModernProfileRow(
+                          icon: Icons.person_outline,
+                          label: 'Full Name',
+                          value: user?.userName ?? 'Not Available',
+                          color: Colors.blue,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        _buildModernProfileRow(
+                          icon: Icons.email_outlined,
+                          label: 'Email Address',
+                          value: user?.email ?? 'Not Available',
+                          color: Colors.orange,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        _buildModernProfileRow(
+                          icon: Icons.work_outline,
+                          label: 'Role',
+                          value: user?.role ?? 'Not Available',
+                          color: Colors.green,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        _buildModernProfileRow(
+                          icon: Icons.business_outlined,
+                          label: 'Department',
+                          value: user?.sectorType ?? 'Not Available',
+                          color: Colors.purple,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 16 : 24),
+
+                        // Action Buttons
+                        isSmallScreen
+                            ? Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: _buildActionButton(
+                                icon: Icons.edit_outlined,
+                                label: 'Edit Profile',
+                                color: Color(0xFF2E3B4E),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  // Navigate to edit profile page
+                                  CustomSnackBar.show(context: context, message: 'Edit Profile feature coming soon', type: SnackBarType.info);
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: _buildActionButton(
+                                icon: Icons.close_outlined,
+                                label: 'Close',
+                                color: Colors.grey.shade600,
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ),
+                          ],
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildActionButton(
+                              icon: Icons.edit_outlined,
+                              label: 'Edit Profile',
+                              color: Color(0xFF2E3B4E),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                // Navigate to edit profile page
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Edit Profile feature coming soon'),
+                                    backgroundColor: Color(0xFF2E3B4E),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildActionButton(
+                              icon: Icons.close_outlined,
+                              label: 'Close',
+                              color: Colors.grey.shade600,
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -59,538 +394,22 @@ class SectorAdminHome extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: const Color(0xFF1E293B),
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Sector 7',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        Builder(
-          builder: (context) => PopupMenuButton<String>(
-            icon: Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: const Color(0xFF3B82F6),
-                  child: const Text(
-                    'JD',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ],
-            ),
-            onSelected: (value) {
-              if (value == 'logout') {
-                _showLogoutDialog(context);
-              } else if (value == 'profile') {
-                _showProfileDialog(context);
-              }else if (value == 'change_password') {
-                _showChangePasswordDialog(context);
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: 'profile',
-                child: Row(
-                  children: const [
-                    Icon(Icons.person, color: Colors.blue),
-                    SizedBox(width: 12),
-                    Text('View Profile'),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-              value: 'change_password',
-              child: Row(
-              children: const [
-              Icon(Icons.lock, color: Colors.orange),
-              SizedBox(width: 12),
-              Text('Change Password'),
-              ],
-              ),
-              ),
-              PopupMenuItem<String>(
-                value: 'logout',
-                child: Row(
-                  children: const [
-                    Icon(Icons.logout, color: Colors.red),
-                    SizedBox(width: 12),
-                    Text('Logout', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWelcomeSection() {
+  Widget _buildModernProfileRow({required IconData icon, required String label, required String value, required Color color, required bool isSmallScreen,}) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Welcome back, John!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Here\'s your sector overview for today',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Sector 7 - North District',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid(BuildContext parentContext) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.1,
-      children: [
-        _buildStatCard(
-          title: 'Pending Queries',
-          value: '23',
-          icon: Icons.pending_actions,
-          color: const Color(0xFFEF4444),
-          bgColor: const Color(0xFFFEE2E2),
-        ),
-        _buildStatCard(
-          title: 'Resolved Queries',
-          value: '156',
-          icon: Icons.check_circle,
-          color: const Color(0xFF10B981),
-          bgColor: const Color(0xFFD1FAE5),
-        ),
-        _buildStatCard(
-          title: 'View Workers',
-          value: '8',
-          icon: Icons.engineering,
-          color: const Color(0xFF3B82F6),
-          bgColor: const Color(0xFFDBEAFE),
-    onTap: () => _handleViewWorkers(parentContext),
-    ),
-
-        _buildStatCard(
-          title: 'Total Queries',
-          value: '179',
-          icon: Icons.analytics,
-          color: const Color(0xFF8B5CF6),
-          bgColor: const Color(0xFFEDE9FE),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required Color bgColor,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1E293B),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickActionCard(
-                    title: 'Assign Worker',
-                    subtitle: 'Assign technician to query',
-                    icon: Icons.person_add,
-                    color: const Color(0xFF3B82F6),
-                    onTap: () => _handleAssignWorker(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildQuickActionCard(
-                    title: 'View Complaints',
-                    subtitle: 'Browse all complaints',
-                    icon: Icons.list_alt,
-                    color: const Color(0xFF10B981),
-                    onTap: () => _handleViewComplaints(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildQuickActionCard(
-              title: 'Create Worker',
-              subtitle: 'Add a new worker to the system',
-              icon: Icons.person_add_alt_1,
-              color: const Color(0xFF8B5CF6),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CreateWorkerScreen()),
-                );
-              },
-              isFullWidth: true,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-    bool isFullWidth = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: isFullWidth
-            ? Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: color,
-              size: 16,
-            ),
-          ],
-        )
-            : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /*Widget _buildRecentActivitiesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Recent Activities',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            TextButton(
-              onPressed: () => _handleViewAllActivities(),
-              child: const Text(
-                'View All',
-                style: TextStyle(
-                  color: Color(0xFF3B82F6),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              _buildActivityItem(
-                title: 'Water supply complaint resolved',
-                subtitle: 'Block A - Resolved by Tech #205',
-                time: '2 hours ago',
-                icon: Icons.water_drop,
-                color: const Color(0xFF10B981),
-              ),
-              _buildActivityItem(
-                title: 'New technician assigned',
-                subtitle: 'Electrical issue - Block C',
-                time: '4 hours ago',
-                icon: Icons.person_add,
-                color: const Color(0xFF3B82F6),
-              ),
-              _buildActivityItem(
-                title: 'Maintenance request submitted',
-                subtitle: 'Street light repair - Block B',
-                time: '6 hours ago',
-                icon: Icons.build,
-                color: const Color(0xFFEF4444),
-                isLast: true,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivityItem({
-    required String title,
-    required String subtitle,
-    required String time,
-    required IconData icon,
-    required Color color,
-    bool isLast = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : Border(
-          bottom: BorderSide(
-            color: Colors.grey.withValues(alpha: 0.1),
-            width: 1,
-          ),
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: isSmallScreen ? 35 : 40,
+            height: isSmallScreen ? 35 : 40,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
@@ -598,178 +417,395 @@ class SectorAdminHome extends StatelessWidget {
             child: Icon(
               icon,
               color: color,
-              size: 20,
+              size: isSmallScreen ? 18 : 20,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isSmallScreen ? 12 : 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E293B),
+                  label,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 11 : 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
+                  value,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-          ),
-          Text(
-            time,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF94A3B8),
             ),
           ),
         ],
       ),
     );
-  }*/
+  }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.read<AuthBloc>().add(AuthLogout());
-              },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
+  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onPressed,}) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+        elevation: 2,
+        shadowColor: color.withValues(alpha: 0.3),
+      ),
     );
   }
-  void _showProfileDialog(BuildContext context) {
+
+  void showLoadingDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('Name: John Doe'),
-              Text('Role: Sector Admin'),
-              Text('Email: johndoe@example.com'),
-            ],
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        _dialogContext = dialogContext;
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 60,
+                  width: 60,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 5,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  "Signing Out",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "We're securely logging you out of your account. This won't take long.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
   }
-    void _showChangePasswordDialog(BuildContext context) {
-      final _formKey = GlobalKey<FormState>();
-      final TextEditingController _oldPasswordController = TextEditingController();
-      final TextEditingController _newPasswordController = TextEditingController();
-      final TextEditingController _confirmPasswordController = TextEditingController();
 
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Change Password'),
-            content: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+  void dismissLoadingDialog() {
+    if (_dialogContext != null) {
+      Navigator.of(_dialogContext!, rootNavigator: true).pop();
+      _dialogContext = null;
+    }
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      leading: Icon(Icons.dashboard, color: Colors.white,),
+      title: Text(
+        'ComplaintDesk',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+      backgroundColor: Colors.blue[700],
+      foregroundColor: Colors.white,
+      elevation: 0,
+      actions: [
+        IconButton(
+          icon: _isLoading
+              ? SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
+              : Icon(Icons.refresh, color: Colors.white),
+          onPressed: _isLoading ? null : _onRefresh,
+        ),
+        PopupMenuButton<String>(
+          icon: Icon(Icons.account_circle, color: Colors.white),
+          onSelected: _handleProfileMenuSelection,
+          itemBuilder: (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: 'profile',
+              child: Row(
                 children: [
-                  TextFormField(
-                    controller: _oldPasswordController,
-                    decoration: const InputDecoration(labelText: 'Old Password'),
-                    obscureText: true,
-                    validator: (value) => value == null || value.isEmpty ? 'Enter old password' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _newPasswordController,
-                    decoration: const InputDecoration(labelText: 'New Password'),
-                    obscureText: true,
-                    validator: (value) => value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _confirmPasswordController,
-                    decoration: const InputDecoration(labelText: 'Confirm New Password'),
-                    obscureText: true,
-                    validator: (value) => value != _newPasswordController.text ? 'Passwords do not match' : null,
-                  ),
+                  Icon(Icons.person, color: Colors.grey[700]),
+                  SizedBox(width: 12),
+                  Text('View Profile'),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+            PopupMenuItem<String>(
+              value: 'change_password',
+              child: Row(
+                children: [
+                  Icon(Icons.password, color: Colors.grey[700]),
+                  SizedBox(width: 12),
+                  Text('Change Password'),
+                ],
               ),
-              TextButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Password changed (demo only)')),
-                    );
-                  }
-                },
-                child: const Text('Change Password'),
+            ),
+            PopupMenuDivider(),
+            PopupMenuItem<String>(
+              value: 'logout',
+              child: Row(
+                children: [
+                  Icon(Icons.logout, color: Colors.red),
+                  SizedBox(width: 12),
+                  Text('Logout', style: TextStyle(color: Colors.red)),
+                ],
               ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Dashboard Overview',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
+          ),
+        ),
+        SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          // childAspectRatio: 0.6,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          children: [
+            _buildProfileStatCard(
+              title: 'Pending Queries',
+              value: data?.pendingQueries != null ? data!.pendingQueries.toString() : '0',
+              icon: Icons.pending_actions,
+              color: Colors.orange[600]!,
+              trend: '-12 from yesterday',
+            ),
+            _buildProfileStatCard(
+                title: 'In Progress and Reject Queries',
+                value: '${data?.inProgressQueries != null ? data!.inProgressQueries.toString() : '0'} / ${data?.rejectedQueries != null ? data!.rejectedQueries.toString() : '0'}',
+                icon: Icons.autorenew,
+                color: Color(0xFFEF4444),
+                trend: 'All operational'
+            ),
+            _buildProfileStatCard(
+              title: 'Resolved Queries',
+              value: data?.resolvedQueries != null ? data!.resolvedQueries.toString() : '0',
+              icon: Icons.check_circle,
+              color: Colors.green[600]!,
+              trend: '+89 this week',
+            ),
+            _buildProfileStatCard(
+              title: 'Total Technicians',
+              value: data?.totalTechnician != null ? data!.totalTechnician.toString() : '0',
+              icon: Icons.engineering,
+              color: Colors.blue[600]!,
+              trend: '+3 this month',
+              onTap: ()=> Navigator.pushNamed(context, '/technician-list-screen'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileStatCard({required String title, required String value, required IconData icon, required Color color, required String trend, VoidCallback? onTap,}) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // radius here
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              // SizedBox(height: 8),
+              // Text(
+              //   trend,
+              //   style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+              // ),
             ],
-          );
-        },
-      );
-    }
-  void _handleAssignWorker() {
-    // Implementation for assign worker
-    print('Assign worker tapped');
+          ),
+        ),
+      ),
+    );
   }
 
-  void _handleViewComplaints() {
-    // Implementation for view complaints
-    print('View complaints tapped');
+  Widget _buildQuickActionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
+          ),
+        ),
+        SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          childAspectRatio: 2.5,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: [
+            _buildProfileActionButton(
+              title: 'Add Technician',
+              icon: Icons.person_add,
+              color: Colors.blue[600]!,
+              onTap: () {
+                Navigator.pushNamed(context, '/create-worker-screen');
+              },
+            ),
+            _buildProfileActionButton(
+              title: 'View All Queries',
+              icon: Icons.view_list,
+              color: Colors.green[600]!,
+              onTap: () {
+                // Handle view all queries
+                Navigator.pushNamed(context, '/sector-all-complaint-screen');
+              },
+            ),
+            // _buildActionButton(
+            //   title: 'Generate Reports',
+            //   icon: Icons.assessment,
+            //   color: Colors.purple[600]!,
+            //   onTap: () {
+            //     // Handle generate reports
+            //   },
+            // ),
+            // _buildActionButton(
+            //   title: 'System Settings',
+            //   icon: Icons.settings,
+            //   color: Colors.orange[600]!,
+            //   onTap: () {
+            //     // Handle system settings
+            //   },
+            // ),
+          ],
+        ),
+      ],
+    );
   }
 
-  void _handleGenerateReport() {
-    // Implementation for generate report
-    print('Generate report tapped');
-  }
-
-  void _handleViewAllActivities() {
-    // Implementation for view all activities
-    print('View all activities tapped');
-  }
-  void _handleViewWorkers(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const WorkersListScreen(),
+  Widget _buildProfileActionButton({required String title, required IconData icon, required Color color, required VoidCallback onTap,}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:complaint_portal/common_widgets/grouped_paginated_list_view.dart
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/widgets/assign_complaint_card.dart';
@@ -39,10 +40,16 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   DateTime? _endDate;
   bool _hasActiveFilters = false;
   BuildContext? _dialogContext;
+  UserModel? user;
 
   @override
   void initState() {
     super.initState();
+    final authBloc = context.read<AuthBloc>();
+    final UserModel? userState = authBloc.currentUser;
+    if (userState != null) {
+      user = userState;
+    }
     _fetchEntries();
     _scrollController.addListener(_scrollListener);
   }
@@ -304,10 +311,10 @@ class _TechnicianHomeState extends State<TechnicianHome> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
-            color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xFF2E3B4E),
+        backgroundColor: Colors.blue[700],
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -348,12 +355,12 @@ class _TechnicianHomeState extends State<TechnicianHome> {
                 ),
               ),
               PopupMenuItem<String>(
-                value: 'settings',
+                value: 'change_password',
                 child: Row(
                   children: [
-                    Icon(Icons.settings, color: Colors.grey[700]),
+                    Icon(Icons.password, color: Colors.grey[700]),
                     SizedBox(width: 12),
-                    Text('Settings'),
+                    Text('Change Password'),
                   ],
                 ),
               ),
@@ -506,8 +513,8 @@ class _TechnicianHomeState extends State<TechnicianHome> {
       case 'stats':
         _showStatsDialog();
         break;
-      case 'settings':
-        _showSettingsDialog();
+      case 'change_password':
+        Navigator.pushNamed(context, '/change-password');
         break;
       case 'logout':
         _showLogoutDialog();
@@ -518,81 +525,287 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   void _showProfileDialog() {
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Color(0xFF2E3B4E),
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              SizedBox(width: 12),
-              Text(
-                'Profile',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
+        final screenSize = MediaQuery.of(context).size;
+        final isSmallScreen = screenSize.width < 400;
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProfileRow('Name', 'John Technician'),
-              _buildProfileRow('ID', 'TECH-001'),
-              _buildProfileRow('Department', 'Maintenance'),
-              _buildProfileRow('Phone', '+1 234 567 8900'),
-              _buildProfileRow('Email', 'john.tech@company.com'),
-              _buildProfileRow('Shift', 'Day Shift (9 AM - 6 PM)'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Close'),
+          elevation: 10,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: isSmallScreen ? screenSize.width * 0.9 : 400,
+            constraints: BoxConstraints(
+              maxWidth: screenSize.width * 0.9,
+              maxHeight: screenSize.height * 0.8,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Navigate to edit profile page
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Edit Profile feature coming soon')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2E3B4E),
-                foregroundColor: Colors.white,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  Colors.grey.shade50,
+                ],
               ),
-              child: Text('Edit Profile'),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
-          ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header Section
+                  Container(
+                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF2E3B4E),
+                          Color(0xFF3A4A5C),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Profile Avatar
+                        Container(
+                          width: isSmallScreen ? 60 : 80,
+                          height: isSmallScreen ? 60 : 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.3),
+                                Colors.white.withValues(alpha: 0.1),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.person_outline,
+                            size: isSmallScreen ? 30 : 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        Text(
+                          'Profile Information',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 20 : 24,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Your account details',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 12 : 14,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Content Section
+                  Padding(
+                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildModernProfileRow(
+                          icon: Icons.person_outline,
+                          label: 'Full Name',
+                          value: user?.userName ?? 'Not Available',
+                          color: Colors.blue,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        _buildModernProfileRow(
+                          icon: Icons.email_outlined,
+                          label: 'Email Address',
+                          value: user?.email ?? 'Not Available',
+                          color: Colors.orange,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
+                        _buildModernProfileRow(
+                          icon: Icons.work_outline,
+                          label: 'Role',
+                          value: user?.technicianType ?? 'Not Available',
+                          color: Colors.green,
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        SizedBox(height: isSmallScreen ? 16 : 24),
+
+                        // Action Buttons
+                        isSmallScreen
+                            ? Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: _buildActionButton(
+                                icon: Icons.edit_outlined,
+                                label: 'Edit Profile',
+                                color: Color(0xFF2E3B4E),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  // Navigate to edit profile page
+                                  CustomSnackBar.show(context: context, message: 'Edit Profile feature coming soon', type: SnackBarType.info);
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: _buildActionButton(
+                                icon: Icons.close_outlined,
+                                label: 'Close',
+                                color: Colors.grey.shade600,
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ),
+                          ],
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildActionButton(
+                              icon: Icons.edit_outlined,
+                              label: 'Edit Profile',
+                              color: Color(0xFF2E3B4E),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                // Navigate to edit profile page
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Edit Profile feature coming soon'),
+                                    backgroundColor: Color(0xFF2E3B4E),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildActionButton(
+                              icon: Icons.close_outlined,
+                              label: 'Close',
+                              color: Colors.grey.shade600,
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
   }
 
-  Widget _buildProfileRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+  Widget _buildModernProfileRow({required IconData icon, required String label, required String value, required Color color, required bool isSmallScreen,}) {
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
+          Container(
+            width: isSmallScreen ? 35 : 40,
+            height: isSmallScreen ? 35 : 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: isSmallScreen ? 18 : 20,
             ),
           ),
+          SizedBox(width: isSmallScreen ? 12 : 16),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[800]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 11 : 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onPressed,}) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+        elevation: 2,
+        shadowColor: color.withValues(alpha: 0.3),
       ),
     );
   }
@@ -692,79 +905,6 @@ class _TechnicianHomeState extends State<TechnicianHome> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.settings, color: Color(0xFF2E3B4E)),
-              SizedBox(width: 12),
-              Text(
-                'Settings',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.notifications),
-                title: Text('Notifications'),
-                trailing: Switch(
-                  value: true,
-                  onChanged: (value) {
-                    // Handle notification toggle
-                  },
-                ),
-                contentPadding: EdgeInsets.zero,
-              ),
-              ListTile(
-                leading: Icon(Icons.dark_mode),
-                title: Text('Dark Mode'),
-                trailing: Switch(
-                  value: false,
-                  onChanged: (value) {
-                    // Handle dark mode toggle
-                  },
-                ),
-                contentPadding: EdgeInsets.zero,
-              ),
-              ListTile(
-                leading: Icon(Icons.language),
-                title: Text('Language'),
-                trailing: Text('English'),
-                contentPadding: EdgeInsets.zero,
-                onTap: () {
-                  // Handle language selection
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.update),
-                title: Text('Auto-refresh'),
-                trailing: Switch(
-                  value: true,
-                  onChanged: (value) {
-                    // Handle auto-refresh toggle
-                  },
-                ),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -937,15 +1077,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
     }
   }
 
-  void _onViewResolution(AssignComplaint data){
-
-  }
-
-  void showResolutionDialog({
-    required BuildContext context,
-    required String? imageUrl, // Can be null
-    required String resolutionNote,
-  }) {
+  void showResolutionDialog({required BuildContext context, required String? imageUrl, required String resolutionNote,}) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1043,80 +1175,6 @@ class _TechnicianHomeState extends State<TechnicianHome> {
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-
-  void _showResolveDialog(BuildContext context) {
-    final TextEditingController remarksController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Mark as Resolved',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Query: ${data ?? 'NA'}'),
-              SizedBox(height: 16),
-              TextField(
-                controller: remarksController,
-                decoration: InputDecoration(
-                  labelText: 'Add Remarks (Optional)',
-                  hintText: 'Enter resolution details...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Handle image upload
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Image upload feature coming soon')),
-                        );
-                      },
-                      icon: Icon(Icons.camera_alt, size: 18),
-                      label: Text('Upload Image'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[600],
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Resolve'),
-            ),
-          ],
         );
       },
     );

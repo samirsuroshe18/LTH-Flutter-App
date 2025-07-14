@@ -27,9 +27,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final token = await FirebaseMessaging.instance.getToken();
-  debugPrint('FCM Token : $token');
-
   ///Initializing notification
   await NotificationController.initializeLocalNotifications();
 

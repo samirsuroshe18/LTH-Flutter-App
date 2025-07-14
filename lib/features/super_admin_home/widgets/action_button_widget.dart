@@ -51,7 +51,7 @@ class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
     final colorScheme = theme.colorScheme;
 
     return Padding(
-      padding: widget.padding ?? const EdgeInsets.all(16.0),
+      padding: widget.padding ?? const EdgeInsets.symmetric(vertical: 16.0, horizontal: 36.0),
       child: Row(
         children: [
           // Resolved Button
@@ -113,9 +113,9 @@ class RejectBottomSheet extends StatefulWidget {
   final Function(String reason) onSubmit;
 
   const RejectBottomSheet({
-    Key? key,
+    super.key,
     required this.onSubmit,
-  }) : super(key: key);
+  });
 
   @override
   State<RejectBottomSheet> createState() => _RejectBottomSheetState();
@@ -171,7 +171,7 @@ class _RejectBottomSheetState extends State<RejectBottomSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -214,6 +214,7 @@ class _RejectBottomSheetState extends State<RejectBottomSheet> {
             child: TextFormField(
               controller: _textController,
               maxLines: 4,
+              textAlignVertical: TextAlignVertical.top,
               enabled: !_isSubmitting,
               decoration: InputDecoration(
                 labelText: 'Rejection reason',
@@ -235,7 +236,7 @@ class _RejectBottomSheetState extends State<RejectBottomSheet> {
                   ),
                 ),
                 filled: true,
-                fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+                fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {

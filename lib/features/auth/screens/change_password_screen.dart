@@ -31,7 +31,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Change Password', style: TextStyle(color: Colors.white),),
-        backgroundColor: Color(0xFF2E3B4E),
+        backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
@@ -95,7 +95,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         borderRadius: BorderRadius.circular(10.0), // Border radius
                       ), // Border color and width
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Color(0xFF2E3B4E),
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator()

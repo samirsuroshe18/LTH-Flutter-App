@@ -5,25 +5,25 @@ import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
-import 'package:complaint_portal/features/super_admin_home/widgets/sector_admin_card.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/widgets/technician_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
 
-class SectorAdminListScreen extends StatefulWidget {
-  const SectorAdminListScreen({super.key});
+class TechnicianListScreen extends StatefulWidget {
+  const TechnicianListScreen({super.key});
 
   @override
-  State<SectorAdminListScreen> createState() => _SectorAdminListScreenState();
+  State<TechnicianListScreen> createState() => _TechnicianListScreenState();
 }
 
-class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
+class _TechnicianListScreenState extends State<TechnicianListScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<Sectoradmin> data = [];
+  List<Technician> data = [];
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
@@ -82,7 +82,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       queryParams['endDate'] = DateFormat('yyyy-MM-dd').format(_endDate!);
     }
 
-    context.read<SuperAdminHomeBloc>().add(GetSectorAdmins(queryParams: queryParams));
+    context.read<SectorAdminHomeBloc>().add(GetTechnician(queryParams: queryParams));
   }
 
   void _applyFilters() {
@@ -138,7 +138,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          'Sectors Admins',
+          'Technicians',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -160,24 +160,24 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
           ),
         ),
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
         listener: (context, state) {
-          if (state is GetSectorAdminsLoading) {
+          if (state is GetTechnicianLoading) {
             _isLoading = true;
             _isError = false;
           }
-          if (state is GetSectorAdminsSuccess) {
+          if (state is GetTechnicianSuccess) {
             if (_page == 1) {
               data.clear();
             }
-            data.addAll(state.response.sectoradmins as Iterable<Sectoradmin>);
+            data.addAll(state.response.technician as Iterable<Technician>);
             _page++;
             _hasMore = state.response.pagination?.hasMore ?? false;
             _isLoading = false;
             _isLazyLoading = false;
             _isError = false;
           }
-          if (state is GetSectorAdminsFailure) {
+          if (state is GetTechnicianFailure) {
             data = [];
             _isLoading = false;
             _isError = true;
@@ -189,7 +189,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<Sectoradmin>(
+                child: SinglePaginatedListView<Technician>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -201,7 +201,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<Sectoradmin>(
+                child: SinglePaginatedListView<Technician>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -223,12 +223,12 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
 
   Widget _itemBuilder(item, index) {
     return StaggeredListAnimation(
-      index: index,
-      child: SectorAdminCard(
-        data: item,
-        showDeleteConfirmation: ()=> _showDeleteConfirmation(context, item),
-        onDeactivate: ()=> _showDeactivateConfirmation(context, item),
-      )
+        index: index,
+        child: TechnicianCard(
+          data: item,
+          showDeleteConfirmation: ()=> _showDeleteConfirmation(context, item),
+          onDeactivate: ()=> _showDeactivateConfirmation(context, item),
+        )
     );
   }
 
@@ -379,30 +379,30 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
     await _fetchEntries();
   }
 
-  void _showDeactivateConfirmation(BuildContext context, Sectoradmin sectorAdmin) {
+  void _showDeactivateConfirmation(BuildContext context, Technician technician) {
     bool isLoading = false;
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+        return BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
           listener: (context, state) {
-            if(state is DeactivateSectorAdminLoading){
+            if(state is ChangeTechnicianStateLoading){
               isLoading = true;
             }
 
-            if (state is DeactivateSectorAdminSuccess) {
+            if (state is ChangeTechnicianStateSuccess) {
               isLoading = false;
-              final index = data.indexWhere((tech) => tech.id == sectorAdmin.id);
+              final index = data.indexWhere((tech) => tech.id == technician.id);
               if (index != -1) {
                 setState(() {
                   data[index] = state.response;
                 });
               }
               Navigator.pop(context);
-              CustomSnackBar.show(context: context, message: '${sectorAdmin.userName} has been ${sectorAdmin.isActive! ? 'Deactivated ' : 'Activated ' } successfully', type: SnackBarType.success);
+              CustomSnackBar.show(context: context, message: '${technician.userName} has been ${technician.isActive! ? 'Deactivated ' : 'Activated ' } successfully', type: SnackBarType.success);
             }
 
-            if (state is DeactivateSectorAdminFailure) {
+            if (state is ChangeTechnicianStateFailure) {
               isLoading = false;
               debugPrint('error : ${state.message}');
               Navigator.pop(context);
@@ -434,7 +434,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${sectorAdmin.isActive! ? 'Deactivate ' : 'Activate ' }Sector Admin Account',
+                      '${technician.isActive! ? 'Deactivate ' : 'Activate ' }Technician Account',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -443,10 +443,10 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                     const SizedBox(height: 8),
                     Text.rich(
                       TextSpan(
-                        text: 'Are you sure you want to ${sectorAdmin.isActive! ? 'Deactivate' : 'Activate' } ',
+                        text: 'Are you sure you want to ${technician.isActive! ? 'Deactivate' : 'Activate' } ',
                         children: [
                           TextSpan(
-                            text: '${sectorAdmin.userName ?? "NA"}\'s',
+                            text: '${technician.userName ?? "NA"}\'s',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const TextSpan(
@@ -481,8 +481,8 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                             onPressed: isLoading
                                 ? null
                                 : () {
-                              context.read<SuperAdminHomeBloc>().add(
-                                  DeactivateSectorAdmin(id: sectorAdmin.id!)
+                              context.read<SectorAdminHomeBloc>().add(
+                                  ChangeTechnicianState(id: technician.id!)
                               );
                             },
                             style: TextButton.styleFrom(
@@ -506,13 +506,13 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  sectorAdmin.isActive! ? 'Deactivating..' : 'Activating..',
+                                  technician.isActive! ? 'Deactivating..' : 'Activating..',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ],
                             )
                                 : Text(
-                              sectorAdmin.isActive! ? 'Deactivate' : 'Activate',
+                              technician.isActive! ? 'Deactivate' : 'Activate',
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -529,28 +529,28 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Sectoradmin sectorAdmin) {
+  void _showDeleteConfirmation(BuildContext context, Technician technician) {
     bool isLoading = false;
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+        return BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
           listener: (context, state) {
 
-            if(state is RemoveSectorAdminLoading){
+            if(state is RemoveTechnicianLoading){
               isLoading = true;
             }
 
-            if (state is RemoveSectorAdminSuccess) {
+            if (state is RemoveTechnicianSuccess) {
               isLoading = false;
               setState(() {
-                data.removeWhere((tech) => tech.id == sectorAdmin.id);
+                data.removeWhere((tech) => tech.id == technician.id);
               });
               Navigator.pop(context);
-              CustomSnackBar.show(context: context, message: '${sectorAdmin.userName} has been deleted successfully', type: SnackBarType.success);
+              CustomSnackBar.show(context: context, message: '${technician.userName} has been deleted successfully', type: SnackBarType.success);
             }
 
-            if (state is RemoveSectorAdminFailure) {
+            if (state is RemoveTechnicianFailure) {
               isLoading = false;
               Navigator.pop(context);
               CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
@@ -581,7 +581,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Delete Sector Admin Account',
+                      'Delete Technician Account',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -593,7 +593,7 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                         text: 'Are you sure you want to delete ',
                         children: [
                           TextSpan(
-                            text: '${sectorAdmin.userName ?? "NA"}\'s',
+                            text: '${technician.userName ?? "NA"}\'s',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const TextSpan(
@@ -628,8 +628,8 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
                             onPressed: isLoading
                                 ? null
                                 : () {
-                              context.read<SuperAdminHomeBloc>().add(
-                                  RemoveSectorAdmin(id: sectorAdmin.id!)
+                              context.read<SectorAdminHomeBloc>().add(
+                                  RemoveTechnician(id: technician.id!)
                               );
                             },
                             style: TextButton.styleFrom(

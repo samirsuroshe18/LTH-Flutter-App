@@ -13,6 +13,7 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  UserModel? _currentUser;
 
   AuthBloc({required AuthRepository authRepository})
     : _authRepository = authRepository,
@@ -76,6 +77,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
 
         final UserModel response = await _authRepository.getUser();
+        _currentUser = response;
         emit(AuthGetUserSuccess(response: response));
       } catch (e) {
         if (e is ApiError) {
@@ -177,6 +179,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthState getLatestState() {
     return state;
   }
+
+  UserModel? get currentUser => _currentUser;
+  // Method to check if user is logged in
+  bool get isLoggedIn => _currentUser != null;
 }
 
 Future<bool> _checkInternetConnection() async {

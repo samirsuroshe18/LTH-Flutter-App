@@ -1,4 +1,4 @@
-import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
+import 'package:complaint_portal/features/super_admin_home/models/active_sector_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

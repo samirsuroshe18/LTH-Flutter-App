@@ -51,18 +51,18 @@ final class GetSectorAdminsFailure extends SuperAdminHomeState{
 }
 
 /// Get All Complaints
-final class GetAllComplaintsLoading extends SuperAdminHomeState{}
+final class GetSupAdminComplaintsLoading extends SuperAdminHomeState{}
 
-final class GetAllComplaintsSuccess extends SuperAdminHomeState{
+final class GetSupAdminComplaintsSuccess extends SuperAdminHomeState{
   final AdminComplaintModel response;
-  GetAllComplaintsSuccess({required this.response});
+  GetSupAdminComplaintsSuccess({required this.response});
 }
 
-final class GetAllComplaintsFailure extends SuperAdminHomeState{
+final class GetSupAdminComplaintsFailure extends SuperAdminHomeState{
   final String message;
   final int? status;
 
-  GetAllComplaintsFailure( {required this.message, this.status});
+  GetSupAdminComplaintsFailure( {required this.message, this.status});
 }
 
 ///remove admin
@@ -78,6 +78,21 @@ final class RemoveSectorAdminFailure extends SuperAdminHomeState{
   final int? status;
 
   RemoveSectorAdminFailure( {required this.message, this.status});
+}
+
+///Deactivate admin
+final class DeactivateSectorAdminLoading extends SuperAdminHomeState{}
+
+final class DeactivateSectorAdminSuccess extends SuperAdminHomeState{
+  final Sectoradmin response;
+  DeactivateSectorAdminSuccess({required this.response});
+}
+
+final class DeactivateSectorAdminFailure extends SuperAdminHomeState{
+  final String message;
+  final int? status;
+
+  DeactivateSectorAdminFailure( {required this.message, this.status});
 }
 
 ///add sector admin
@@ -96,18 +111,18 @@ final class AddSectorAdminFailure extends SuperAdminHomeState{
 }
 
 /// Get Complaint Details
-final class GetComplaintDetailsLoading extends SuperAdminHomeState{}
+final class GetSupComplaintDetailsLoading extends SuperAdminHomeState{}
 
-final class GetComplaintDetailsSuccess extends SuperAdminHomeState{
+final class GetSupComplaintDetailsSuccess extends SuperAdminHomeState{
   final AdminComplaint response;
-  GetComplaintDetailsSuccess({required this.response});
+  GetSupComplaintDetailsSuccess({required this.response});
 }
 
-final class GetComplaintDetailsFailure extends SuperAdminHomeState{
+final class GetSupComplaintDetailsFailure extends SuperAdminHomeState{
   final String message;
   final int? status;
 
-  GetComplaintDetailsFailure( {required this.message, this.status});
+  GetSupComplaintDetailsFailure( {required this.message, this.status});
 }
 
 /// Get Complaint Details

@@ -95,11 +95,11 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
               "Submit Resolution",
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
               ),
             ),
             centerTitle: true,
-            backgroundColor: Colors.green[600],
+            backgroundColor: Colors.blue[700],
+            foregroundColor: Colors.white,
             elevation: 0,
             iconTheme: IconThemeData(color: Colors.white),
           ),
@@ -167,7 +167,7 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
                     )
                         : ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Container(
+                      child: SizedBox(
                         width: double.infinity,
                         height: double.infinity,
                         child: Image.file(
@@ -271,7 +271,7 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
                         labelText: "Resolution Note",
                         hintText: "Enter detailed information about the resolution...\n\n• What was the issue?\n• How was it resolved?\n• Any follow-up needed?",
                         labelStyle: TextStyle(
-                          color: Colors.green[600],
+                          color: Colors.blue[600],
                           fontWeight: FontWeight.w600,
                         ),
                         hintStyle: TextStyle(
@@ -285,7 +285,7 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.green.shade400, width: 2),
+                          borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -300,7 +300,7 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
                   const SizedBox(height: 32),
 
                   // Enhanced Submit Button
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: isLoading ? null : () => _onSubmit(context),
@@ -322,7 +322,7 @@ class _SubmitResolutionScreenState extends State<SubmitResolutionScreen> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isLoading ? Colors.grey[400] : Colors.green[600],
+                        backgroundColor: isLoading ? Colors.grey[400] : Colors.blue[600],
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
