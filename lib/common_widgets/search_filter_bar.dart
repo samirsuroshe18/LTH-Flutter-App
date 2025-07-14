@@ -53,51 +53,52 @@ class SearchFilterBar extends StatelessWidget {
             ),
           ),
 
-          // Small gap between search and filter button
-          const SizedBox(width: 8),
-
           // Filter button
-          if(isFilterButton)
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
+          if(isFilterButton) ...[
+            // Small gap between search and filter button
+            const SizedBox(width: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(8.0),
-                onTap: onFilterPressed,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        Icons.filter_list,
-                        color: hasActiveFilters!=null && hasActiveFilters==true
-                            ? Theme.of(context).colorScheme.primary
-                            : null,
-                      ),
-                      if (hasActiveFilters!=null && hasActiveFilters==true)
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              shape: BoxShape.circle,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8.0),
+                  onTap: onFilterPressed,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          color: hasActiveFilters!=null && hasActiveFilters==true
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                        if (hasActiveFilters!=null && hasActiveFilters==true)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ]
+
         ],
       ),
     );

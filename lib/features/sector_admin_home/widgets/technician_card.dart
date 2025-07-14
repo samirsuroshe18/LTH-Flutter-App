@@ -1,14 +1,14 @@
 import 'package:complaint_portal/common_widgets/custom_cached_network_image.dart';
 import 'package:complaint_portal/common_widgets/custom_full_screen_image_viewer.dart';
-import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
 import 'package:flutter/material.dart';
 
-class SectorAdminCard extends StatelessWidget {
-  final Sectoradmin data;
+class TechnicianCard extends StatelessWidget {
+  final Technician data;
   final VoidCallback showDeleteConfirmation;
   final VoidCallback? onDeactivate;
 
-  const SectorAdminCard({
+  const TechnicianCard({
     super.key,
     required this.data,
     required this.showDeleteConfirmation,
@@ -129,7 +129,7 @@ class SectorAdminCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            data.sectorType ?? "NA",
+                            data.technicianType ?? "NA",
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w500,

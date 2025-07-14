@@ -46,7 +46,7 @@ class DataNotFoundWidget extends StatelessWidget {
                   "Oops! No data to show at the moment.",
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white70,
+                    color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 ),

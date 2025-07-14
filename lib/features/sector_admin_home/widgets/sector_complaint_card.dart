@@ -1,11 +1,11 @@
-import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/sector_complaint_model.dart';
 import 'package:flutter/material.dart';
 
-class ComplaintCard extends StatelessWidget {
-  final AdminComplaint complaint;
+class SectorComplaintCard extends StatelessWidget {
+  final SectorComplaint complaint;
   final VoidCallback? onTap;
 
-  const ComplaintCard({
+  const SectorComplaintCard({
     super.key,
     required this.complaint,
     this.onTap,

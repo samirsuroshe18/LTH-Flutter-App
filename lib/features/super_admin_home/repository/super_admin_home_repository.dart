@@ -2,15 +2,12 @@ import 'dart:convert';
 
 import 'package:complaint_portal/constants/server_constant.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
-import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
-import 'package:complaint_portal/features/super_admin_home/models/AdminComplaintModel.dart';
+import 'package:complaint_portal/features/super_admin_home/models/active_sector_model.dart';
+import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
 import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
 import 'package:complaint_portal/utils/api_error.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SuperAdminHomeRepository {
@@ -32,6 +29,42 @@ class SuperAdminHomeRepository {
 
       if (response.statusCode == 200) {
         return DashboardOverview.fromJson(jsonBody['data']);
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<AdminComplaintModel> getAllComplaints({required Map<String, dynamic> queryParams}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      // Build query string using the same 'queryParams' name
+      String queryString = Uri(queryParameters: queryParams).query;
+      String apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/get-complaints';
+      if (queryString.isNotEmpty) {
+        apiUrl += '?$queryString';
+      }
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return AdminComplaintModel.fromJson(jsonBody['data']);
       } else {
         throw ApiError(
             statusCode: response.statusCode, message: jsonBody['message']);
@@ -152,6 +185,42 @@ class SuperAdminHomeRepository {
     }
   }
 
+  Future<Sectoradmin> deactivateSectorAdmin({required String id}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'id': id,
+      };
+
+      const apiUrl =
+          '${ServerConstant.baseUrl}/api/v1/admin/deactivate-sector-admin';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return Sectoradmin.fromJson(jsonBody['data']);
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
   Future<Map<String, dynamic>> addSectorAdmin({required String userName, required String email, required String phoneNo, required String password, required String sectorType,}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -179,42 +248,6 @@ class SuperAdminHomeRepository {
 
       if (response.statusCode == 200) {
         return jsonBody;
-      } else {
-        throw ApiError(
-            statusCode: response.statusCode, message: jsonBody['message']);
-      }
-    } catch (e) {
-      if (e is ApiError) {
-        throw ApiError(statusCode: e.statusCode, message: e.message);
-      } else {
-        throw ApiError(message: e.toString());
-      }
-    }
-  }
-
-  Future<AdminComplaintModel> getAllComplaints({required Map<String, dynamic> queryParams}) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
-
-      // Build query string using the same 'queryParams' name
-      String queryString = Uri(queryParameters: queryParams).query;
-      String apiUrl = '${ServerConstant.baseUrl}/api/v1/admin/get-complaints';
-      if (queryString.isNotEmpty) {
-        apiUrl += '?$queryString';
-      }
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-
-      final jsonBody = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        return AdminComplaintModel.fromJson(jsonBody['data']);
       } else {
         throw ApiError(
             statusCode: response.statusCode, message: jsonBody['message']);
@@ -349,7 +382,6 @@ class SuperAdminHomeRepository {
       );
 
       final jsonBody = jsonDecode(response.body);
-      print("Data : $jsonBody");
 
       if (response.statusCode == 200) {
         return (jsonBody['data'] as List)

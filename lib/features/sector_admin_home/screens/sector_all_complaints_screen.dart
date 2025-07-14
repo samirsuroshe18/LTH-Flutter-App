@@ -4,26 +4,26 @@ import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
-import 'package:complaint_portal/features/super_admin_home/widgets/complaint_card.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/sector_complaint_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/widgets/sector_complaint_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
-class ViewAllComplaintScreen extends StatefulWidget {
-  const ViewAllComplaintScreen({super.key,});
+class SectorAllComplaintScreen extends StatefulWidget {
+  const SectorAllComplaintScreen({super.key,});
 
   @override
-  State<ViewAllComplaintScreen> createState() => _ViewAllComplaintScreenState();
+  State<SectorAllComplaintScreen> createState() => _SectorAllComplaintScreenState();
 }
 
-class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with AutomaticKeepAliveClientMixin {
+class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<AdminComplaint> data = [];
+  List<SectorComplaint> data = [];
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
@@ -82,7 +82,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
       queryParams['endDate'] = DateFormat('yyyy-MM-dd').format(_endDate!);
     }
 
-    context.read<SuperAdminHomeBloc>().add(GetSupAdminComplaints(queryParams: queryParams));
+    context.read<SectorAdminHomeBloc>().add(GetSectorComplaints(queryParams: queryParams));
   }
 
   void _applyFilters() {
@@ -160,24 +160,24 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
           ),
         ),
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
         listener: (context, state) {
-          if (state is GetSupAdminComplaintsLoading) {
+          if (state is GetSectorComplaintsLoading) {
             _isLoading = true;
             _isError = false;
           }
-          if (state is GetSupAdminComplaintsSuccess) {
+          if (state is GetSectorComplaintsSuccess) {
             if (_page == 1) {
               data.clear();
             }
-            data.addAll(state.response.adminComplaints as Iterable<AdminComplaint>);
+            data.addAll(state.response.sectorComplaints as Iterable<SectorComplaint>);
             _page++;
             _hasMore = state.response.pagination?.hasMore ?? false;
             _isLoading = false;
             _isLazyLoading = false;
             _isError = false;
           }
-          if (state is GetSupAdminComplaintsFailure) {
+          if (state is GetSectorComplaintsFailure) {
             data = [];
             _isLoading = false;
             _isLazyLoading = false;
@@ -191,7 +191,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<AdminComplaint>(
+                child: SinglePaginatedListView<SectorComplaint>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -203,7 +203,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<AdminComplaint>(
+                child: SinglePaginatedListView<SectorComplaint>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -223,10 +223,10 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
     );
   }
 
-  Future<void> _cardOnTap(AdminComplaint complaint) async {
-    final updatedComplaint = await Navigator.pushNamed(context, '/complaint-details-screen', arguments: complaint);
+  Future<void> _cardOnTap(SectorComplaint complaint) async {
+    final updatedComplaint = await Navigator.pushNamed(context, '/sector-complaint-details-screen', arguments: complaint);
 
-    if (updatedComplaint != null && updatedComplaint is AdminComplaint) {
+    if (updatedComplaint != null && updatedComplaint is SectorComplaint) {
       setState(() {
         // Replace or update only the modified item in your list
         int index = data.indexWhere((c) => c.id == updatedComplaint.id);
@@ -240,7 +240,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
   Widget _itemBuilder(item, index) {
     return StaggeredListAnimation(
       index: index,
-      child: ComplaintCard(
+      child: SectorComplaintCard(
         complaint: item,
         onTap: () => _cardOnTap(item),
       ),

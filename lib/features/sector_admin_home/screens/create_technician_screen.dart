@@ -1,34 +1,55 @@
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
+import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class CreateSectorAdminScreen extends StatefulWidget {
-  const CreateSectorAdminScreen({super.key});
+class CreateTechnicianScreen extends StatefulWidget {
+  const CreateTechnicianScreen({super.key});
 
   @override
-  State<CreateSectorAdminScreen> createState() => _CreateSectorAdminScreenState();
+  State<CreateTechnicianScreen> createState() => _CreateTechnicianScreenState();
 }
 
-class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
+class _CreateTechnicianScreenState extends State<CreateTechnicianScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-
   bool _obscurePassword = true;
-  String? _selectedSector;
+  String? _selectedTechnician;
   bool _isLoading = false;
+  late String sectorType;
+  final List<String> _technicianTypes = [];
 
-  final List<String> _sectorTypes = [
-    'Security',
-    'Housekeeping',
-    'Maintenance',
-    'IT',
-    'General Services'
-  ];
+  final Map<String, String> roles = {
+    'Light': 'Maintenance',
+    'AC': 'Maintenance',
+    'Telephone': 'IT',
+    'Technical': 'IT',
+    'HouseKeeping': 'Housekeeping',
+    'Carpentry': 'Maintenance',
+    'Danger': 'Security',
+    'Other': 'Services',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    final authBloc = context.read<AuthBloc>();
+    final UserModel? user = authBloc.currentUser;
+    if (user != null) {
+      sectorType = user.sectorType ?? 'NA';
+      // Add all keys where value matches sectorType
+      _technicianTypes.addAll(
+          roles.entries
+              .where((entry) => entry.value == sectorType)
+              .map((entry) => entry.key));
+    }
+  }
 
   @override
   void dispose() {
@@ -72,12 +93,12 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      context.read<SuperAdminHomeBloc>().add(AddSectorAdmin(
+      context.read<SectorAdminHomeBloc>().add(CreateTechnician(
         userName: _nameController.text,
         email: _emailController.text,
         phoneNo: _phoneController.text,
         password: _passwordController.text,
-        sectorType: _selectedSector!,
+        technicianType: _selectedTechnician!,
       ));
     }
   }
@@ -88,7 +109,7 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Create Sector Admin',
+          'Create Technician',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -99,22 +120,22 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
         listener: (context, state) {
-          if (state is AddSectorAdminLoading) {
+          if (state is CreateTechnicianLoading) {
             _isLoading = true;
           }
-          if (state is AddSectorAdminSuccess) {
+          if (state is CreateTechnicianSuccess) {
             _isLoading = false;
             _formKey.currentState!.reset();
             _nameController.clear();
             _emailController.clear();
             _phoneController.clear();
             _passwordController.clear();
-            _selectedSector = null;
-            CustomSnackBar.show(context: context, message: state.response['message'], type: SnackBarType.success);
+            _selectedTechnician = null;
+            CustomSnackBar.show(context: context, message: "Technician created successfully.", type: SnackBarType.success);
           }
-          if (state is AddSectorAdminFailure) {
+          if (state is CreateTechnicianFailure) {
             _isLoading = false;
             CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
           }
@@ -153,7 +174,7 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Add New Sector Administrator',
+                          'Add New Technician',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -162,7 +183,7 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Fill in the details below to create a new sector admin account',
+                          'Fill in the details below to create a new technician account',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -358,7 +379,7 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Sector Type Dropdown
+                  // Technician Type Dropdown
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -375,10 +396,10 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: DropdownButtonFormField<String>(
-                        value: _selectedSector,
+                        value: _selectedTechnician,
                         decoration: InputDecoration(
-                          labelText: 'Sector Type',
-                          hintText: 'Select sector type',
+                          labelText: 'Technician Type',
+                          hintText: 'Select Technician type',
                           prefixIcon: Icon(Icons.business_outlined, color: Colors.blue[700]),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -391,20 +412,20 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
                           filled: true,
                           fillColor: Colors.grey[50],
                         ),
-                        items: _sectorTypes.map((String sector) {
+                        items: _technicianTypes.map((String technician) {
                           return DropdownMenuItem<String>(
-                            value: sector,
-                            child: Text(sector),
+                            value: technician,
+                            child: Text(technician),
                           );
                         }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
-                            _selectedSector = newValue;
+                            _selectedTechnician = newValue;
                           });
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please select a sector type';
+                            return 'Please select a Technician type';
                           }
                           return null;
                         },
@@ -448,7 +469,7 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
                         ),
                       )
                           : const Text(
-                        'Create Admin',
+                        'Create Technician',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

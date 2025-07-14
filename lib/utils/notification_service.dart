@@ -181,7 +181,27 @@ class NotificationController {
   static void _navigateBasedOnAction(String action, Map<String, dynamic> payload) {
     final NavigatorState? currentState = navigatorKey.currentState;
 
-    if (payload['action'] == 'NOTIFY_NEW_COMPLAINT' && isInForeground == true) {
+    if (payload['action'] == 'NOTIFY_NEW_COMPLAINT_ADMIN' && isInForeground == true) {
+      if(getCurrentRouteName() == '/complaint-details-screen'){
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushReplacementNamed('/complaint-details-screen', arguments: payload['complaintId']);
+        });
+      }else{
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushNamed('/complaint-details-screen', arguments: payload['complaintId']);
+        });
+      }
+    } else if (payload['action'] == 'NOTIFY_NEW_COMPLAINT' && isInForeground == true) {
+      if(getCurrentRouteName() == '/sector-complaint-details-screen'){
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushReplacementNamed('/sector-complaint-details-screen', arguments: payload['complaintId']);
+        });
+      }else{
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushNamed('/sector-complaint-details-screen', arguments: payload['complaintId']);
+        });
+      }
+    } else if (payload['action'] == 'REVIEW_RESOLUTION_ADMIN' && isInForeground == true) {
       if(getCurrentRouteName() == '/complaint-details-screen'){
         WidgetsBinding.instance.addPostFrameCallback((_) {
           currentState?.pushReplacementNamed('/complaint-details-screen', arguments: payload['complaintId']);
@@ -192,43 +212,13 @@ class NotificationController {
         });
       }
     } else if (payload['action'] == 'REVIEW_RESOLUTION' && isInForeground == true) {
-      if(getCurrentRouteName() == '/complaint-details-screen'){
+      if(getCurrentRouteName() == '/sector-complaint-details-screen'){
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushReplacementNamed('/complaint-details-screen', arguments: payload['complaintId']);
+          currentState?.pushReplacementNamed('/sector-complaint-details-screen', arguments: payload['complaintId']);
         });
       }else{
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushNamed('/complaint-details-screen', arguments: payload['complaintId']);
-        });
-      }
-    } else if (payload['action'] == 'RESOLUTION_APPROVED' && isInForeground == true) {
-      if(getCurrentRouteName() == '/complaint-details-screen'){
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushReplacementNamed('/complaint-details-screen', arguments: payload['complaintId']);
-        });
-      }else{
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushNamed('/complaint-details-screen', arguments: payload['complaintId']);
-        });
-      }
-    } else if (payload['action'] == 'ASSIGN_COMPLAINT' && isInForeground == true) {
-      if(getCurrentRouteName() == '/tech-complaint-details-screen'){
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushReplacementNamed('/tech-complaint-details-screen', arguments: {'id': payload['id']});
-        });
-      }else{
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushNamed('/tech-complaint-details-screen', arguments: {'id': payload['id']});
-        });
-      }
-    } else if (payload['action'] == 'RESOLUTION_REJECTED' && isInForeground == true) {
-      if(getCurrentRouteName() == '/complaint-details-screen'){
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushReplacementNamed('/complaint-details-screen', arguments: payload['complaintId']);
-        });
-      }else{
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          currentState?.pushNamed('/complaint-details-screen', arguments: payload['complaintId']);
+          currentState?.pushNamed('/sector-complaint-details-screen', arguments: payload['complaintId']);
         });
       }
     }
@@ -236,9 +226,12 @@ class NotificationController {
 
   static String getTitle(String action, Map<String, dynamic> payload) {
     switch (action) {
+      case "NOTIFY_NEW_COMPLAINT_ADMIN":
       case "NOTIFY_NEW_COMPLAINT":
       case "NOTIFY_ASSIGN_COMPLAINT":
+      case "REVIEW_RESOLUTION_ADMIN":
       case "REVIEW_RESOLUTION":
+      case "REOPEN_COMPLAINT":
       case "RESOLUTION_APPROVED":
       case "RESOLUTION_REJECTED":
         return payload['title'] ?? "Notification";
@@ -249,9 +242,12 @@ class NotificationController {
 
   static String getBody(String action, Map<String, dynamic> payload) {
     switch (action) {
+      case "NOTIFY_NEW_COMPLAINT_ADMIN":
       case "NOTIFY_NEW_COMPLAINT":
       case "NOTIFY_ASSIGN_COMPLAINT":
+      case "REVIEW_RESOLUTION_ADMIN":
       case "REVIEW_RESOLUTION":
+      case "REOPEN_COMPLAINT":
       case "RESOLUTION_APPROVED":
       case "RESOLUTION_REJECTED":
         return payload['message'] ?? payload['body'] ?? "You have a new notification";

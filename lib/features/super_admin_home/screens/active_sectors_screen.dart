@@ -5,7 +5,7 @@ import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
+import 'package:complaint_portal/features/super_admin_home/models/active_sector_model.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/sector_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

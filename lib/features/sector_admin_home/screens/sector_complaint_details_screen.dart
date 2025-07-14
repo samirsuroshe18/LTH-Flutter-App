@@ -3,9 +3,9 @@ import 'package:complaint_portal/common_widgets/custom_cached_network_image.dart
 import 'package:complaint_portal/common_widgets/custom_full_screen_image_viewer.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
+import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
+import 'package:complaint_portal/features/sector_admin_home/models/sector_complaint_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/action_button_widget.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/reopen_button.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/resolution_details_dialog.dart';
@@ -14,21 +14,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
-class AdminComplaintDetailsScreen extends StatefulWidget {
+class SectorComplaintDetailsScreen extends StatefulWidget {
   final String? complaintId;
-  final AdminComplaint? data;
+  final SectorComplaint? data;
 
-  const AdminComplaintDetailsScreen({super.key, required this.data, this.complaintId});
+  const SectorComplaintDetailsScreen({super.key, required this.data, this.complaintId});
 
   @override
-  State<AdminComplaintDetailsScreen> createState() => _AdminComplaintDetailsScreenState();
+  State<SectorComplaintDetailsScreen> createState() => _SectorComplaintDetailsScreenState();
 }
 
-class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScreen> {
+class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScreen> {
   final TextEditingController _messageController = TextEditingController();
   bool isResolved = false;
   final ScrollController _scrollController = ScrollController();
-  AdminComplaint? complaintModel;
+  SectorComplaint? complaintModel;
   late String userId;
   bool _isLoading = false;
   bool _isProcessing = false;
@@ -41,17 +41,15 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
   Technician? _assignedTechnician;
   String? resolutionStatus;
 
-
   @override
   void initState() {
     super.initState();
     if(widget.data!=null){
       complaintModel = widget.data;
-      context.read<SuperAdminHomeBloc>().add(GetSupComplaintDetails(id: widget.data!.id!));
+      context.read<SectorAdminHomeBloc>().add(GetSectorComplaintDetails(id: widget.data!.id!));
     }else{
-      context.read<SuperAdminHomeBloc>().add(GetSupComplaintDetails(id: widget.complaintId!));
+      context.read<SectorAdminHomeBloc>().add(GetSectorComplaintDetails(id: widget.complaintId!));
     }
-
   }
 
   @override
@@ -63,15 +61,15 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
 
   Future<void> _onRefresh() async {
     if(widget.data!=null){
-      context.read<SuperAdminHomeBloc>().add(GetSupComplaintDetails(id: widget.data!.id!));
+      context.read<SectorAdminHomeBloc>().add(GetSectorComplaintDetails(id: widget.data!.id!));
     }else{
-      context.read<SuperAdminHomeBloc>().add(GetSupComplaintDetails(id: widget.complaintId!));
+      context.read<SectorAdminHomeBloc>().add(GetSectorComplaintDetails(id: widget.complaintId!));
     }
   }
 
   void _navigateAndSelectTechnician() async {
     if(complaintModel != null){
-      final selected = await Navigator.pushNamed(context, '/tech-selection-screen', arguments: complaintModel);
+      final selected = await Navigator.pushNamed(context, '/sector-selection-screen', arguments: complaintModel);
       if (selected != null && selected is Technician) {
         setState(() {
           _assignedTechnician = selected;
@@ -124,7 +122,7 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
             const SizedBox(width: 16),
           ],
         ),
-        body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+        body: BlocConsumer<SectorAdminHomeBloc, SectorAdminHomeState>(
           listener: _blocListener,
           builder: (context, state) {
             if (complaintModel != null && _isLoading == false) {
@@ -240,36 +238,6 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
       ),
     );
   }
-
-  // Widget _buildStatusChip() {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  //     decoration: BoxDecoration(
-  //       color: _getStatusColor().withValues(alpha: 0.8),
-  //       borderRadius: BorderRadius.circular(20),
-  //       border: Border.all(color: _getStatusColor(), width: 1),
-  //     ),
-  //     child: Row(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         Icon(
-  //           complaintModel?.status == 'Pending' ? Icons.check_circle : Icons.schedule,
-  //           size: 16,
-  //           color: Colors.white,
-  //         ),
-  //         const SizedBox(width: 6),
-  //         Text(
-  //           complaintModel?.status ?? "NA",
-  //           style: TextStyle(
-  //             fontSize: 12,
-  //             fontWeight: FontWeight.w600,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildComplaintHeader(Color cardColor, Color textColor, Color subtextColor) {
     return Card(
@@ -724,8 +692,8 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
               height: 36,
               child: ElevatedButton.icon(
                 onPressed: _isSaveLoading ? null : () {
-                  context.read<SuperAdminHomeBloc>().add(
-                    AssignTechnician(
+                  context.read<SectorAdminHomeBloc>().add(
+                    SectorAssignTechnician(
                       complaintId: complaintModel!.id!,
                       assignedWorker: _assignedTechnician!.id!,
                     ),
@@ -874,11 +842,11 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
     }
   }
 
-  void _blocListener(BuildContext context, SuperAdminHomeState state) {
-    if (state is AssignTechnicianLoading) {
+  void _blocListener(BuildContext context, SectorAdminHomeState state) {
+    if (state is SectorAssignTechnicianLoading) {
       _isSaveLoading = true;
     }
-    if (state is AssignTechnicianSuccess) {
+    if (state is SectorAssignTechnicianSuccess) {
       _isSaveLoading = false;
       complaintModel = state.response;
       resolutionStatus = complaintModel?.resolution?.status ?? 'pending';
@@ -888,18 +856,19 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
         complaintDate = complaintModel!.createdAt!;
       });
     }
-    if (state is AssignTechnicianFailure) {
+
+    if (state is SectorAssignTechnicianFailure) {
       _isSaveLoading = false;
       CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
     }
 
-    if (state is ApproveResolutionLoading) {
+    if (state is SectorApproveResolutionLoading) {
       setState(() {
         _isResolvedLoading = true;
       });
     }
 
-    if (state is ApproveResolutionSuccess) {
+    if (state is SectorApproveResolutionSuccess) {
       setState(() {
         _isResolvedLoading = false;
         complaintModel = state.response;
@@ -907,20 +876,20 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
       });
     }
 
-    if (state is ApproveResolutionFailure) {
+    if (state is SectorApproveResolutionFailure) {
       setState(() {
         _isResolvedLoading = false;
       });
       _showErrorSnackBar(state.message);
     }
 
-    if (state is RejectResolutionLoading) {
+    if (state is SectorRejectResolutionLoading) {
       setState(() {
         _isRejectLoading = true;
       });
     }
 
-    if (state is RejectResolutionSuccess) {
+    if (state is SectorRejectResolutionSuccess) {
       setState(() {
         _isRejectLoading = false;
         complaintModel = state.response;
@@ -928,20 +897,20 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
       });
     }
 
-    if (state is RejectResolutionFailure) {
+    if (state is SectorRejectResolutionFailure) {
       setState(() {
         _isRejectLoading = false;
       });
       _showErrorSnackBar(state.message);
     }
 
-    if (state is GetSupComplaintDetailsLoading) {
+    if (state is GetSectorComplaintDetailsLoading) {
       setState(() {
         _isLoading = true;
       });
     }
 
-    if (state is GetSupComplaintDetailsSuccess) {
+    if (state is GetSectorComplaintDetailsSuccess) {
       setState(() {
         _isLoading = false;
         complaintModel = state.response;
@@ -951,27 +920,28 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
         complaintDate = complaintModel!.createdAt!;
       });
     }
-    if (state is GetSupComplaintDetailsFailure) {
+
+    if (state is GetSectorComplaintDetailsFailure) {
       complaintModel = null;
       _isLoading = false;
       statusCode = state.status;
       _showErrorSnackBar(state.message);
     }
 
-    if (state is ReopenCompliantLoading) {
+    if (state is SectorReopenCompliantLoading) {
       setState(() {
         _isProcessing = true;
       });
     }
 
-    if (state is ReopenCompliantSuccess) {
+    if (state is SectorReopenCompliantSuccess) {
       setState(() {
         _isProcessing = false;
         complaintModel = state.response;
         isResolved = complaintModel!.status != 'Pending';
       });
     }
-    if (state is ReopenCompliantFailure) {
+    if (state is SectorReopenCompliantFailure) {
       setState(() {
         complaintModel = null;
         _isProcessing = false;
@@ -1005,18 +975,18 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
   }
 
   void _handleResolved() async {
-    context.read<SuperAdminHomeBloc>().add(ApproveResolution(id: complaintModel?.resolution?.id ?? ''));
+    context.read<SectorAdminHomeBloc>().add(SectorApproveResolution(id: complaintModel?.resolution?.id ?? ''));
   }
 
   void _handleRejected(String reason) async {
-    context.read<SuperAdminHomeBloc>().add(RejectResolution(rejectedNote: reason, resolutionId: complaintModel?.resolution?.id ?? ''));
+    context.read<SectorAdminHomeBloc>().add(SectorRejectResolution(rejectedNote: reason, resolutionId: complaintModel?.resolution?.id ?? ''));
   }
 
   Future<void> _handleReopenComplaint() async {
     final confirmed = await _showConfirmationDialog();
     if (confirmed != true) return;
     // Simulate API call
-    context.read<SuperAdminHomeBloc>().add(ReopenCompliant(complaintId: complaintModel?.id ?? ''));
+    context.read<SectorAdminHomeBloc>().add(SectorReopenCompliant(complaintId: complaintModel?.id ?? ''));
   }
 
   Future<bool?> _showConfirmationDialog() async {

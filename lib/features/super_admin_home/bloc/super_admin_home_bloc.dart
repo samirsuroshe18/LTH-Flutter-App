@@ -1,14 +1,11 @@
-import 'dart:io';
-
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
-import 'package:complaint_portal/features/super_admin_home/models/ActiveSectorMode.dart';
-import 'package:complaint_portal/features/super_admin_home/models/AdminComplaintModel.dart';
+import 'package:complaint_portal/features/super_admin_home/models/active_sector_model.dart';
+import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
 import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:complaint_portal/features/auth/models/user_model.dart';
 
 import '../../../utils/api_error.dart';
 import '../repository/super_admin_home_repository.dart';
@@ -61,6 +58,58 @@ class SuperAdminHomeBloc extends Bloc<SuperAdminHomeEvent, SuperAdminHomeState> 
       }
     });
 
+    on<GetSupAdminComplaints>((event, emit) async {
+      emit(GetSupAdminComplaintsLoading());
+      try {
+        final AdminComplaintModel response = await _superAdminHomeRepository.getAllComplaints(queryParams: event.queryParams);
+        emit(GetSupAdminComplaintsSuccess(response: response));
+      } catch (e) {
+        if (e is ApiError) {
+          emit(
+            GetSupAdminComplaintsFailure(
+              message: e.message.toString(),
+              status: e.statusCode,
+            ),
+          );
+        } else {
+          emit(GetSupAdminComplaintsFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<GetSupComplaintDetails>((event, emit) async {
+      emit(GetSupComplaintDetailsLoading());
+      try {
+        final AdminComplaint response = await _superAdminHomeRepository.getComplaintDetails(id: event.id);
+        emit(GetSupComplaintDetailsSuccess(response: response));
+      } catch (e) {
+        if (e is ApiError) {
+          emit(
+            GetSupComplaintDetailsFailure(
+              message: e.message.toString(),
+              status: e.statusCode,
+            ),
+          );
+        } else {
+          emit(GetSupComplaintDetailsFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AddSectorAdmin>((event, emit) async {
+      emit(AddSectorAdminLoading());
+      try{
+        final Map<String, dynamic> response = await _superAdminHomeRepository.addSectorAdmin(userName: event.userName, email: event.email, phoneNo: event.phoneNo, password: event.password, sectorType: event.sectorType);
+        emit(AddSectorAdminSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AddSectorAdminFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AddSectorAdminFailure(message: e.toString()));
+        }
+      }
+    });
+
     on<GetSectorAdmins>((event, emit) async {
       emit(GetSectorAdminsLoading());
       try {
@@ -80,25 +129,6 @@ class SuperAdminHomeBloc extends Bloc<SuperAdminHomeEvent, SuperAdminHomeState> 
       }
     });
 
-    on<GetAllComplaints>((event, emit) async {
-      emit(GetAllComplaintsLoading());
-      try {
-        final AdminComplaintModel response = await _superAdminHomeRepository.getAllComplaints(queryParams: event.queryParams);
-        emit(GetAllComplaintsSuccess(response: response));
-      } catch (e) {
-        if (e is ApiError) {
-          emit(
-            GetAllComplaintsFailure(
-              message: e.message.toString(),
-              status: e.statusCode,
-            ),
-          );
-        } else {
-          emit(GetAllComplaintsFailure(message: e.toString()));
-        }
-      }
-    });
-
     on<RemoveSectorAdmin>((event, emit) async {
       emit(RemoveSectorAdminLoading());
       try{
@@ -113,35 +143,49 @@ class SuperAdminHomeBloc extends Bloc<SuperAdminHomeEvent, SuperAdminHomeState> 
       }
     });
 
-    on<AddSectorAdmin>((event, emit) async {
-      emit(AddSectorAdminLoading());
+    on<DeactivateSectorAdmin>((event, emit) async {
+      emit(DeactivateSectorAdminLoading());
       try{
-        final Map<String, dynamic> response = await _superAdminHomeRepository.addSectorAdmin(userName: event.userName, email: event.email, phoneNo: event.phoneNo, password: event.password, sectorType: event.sectorType);
-        emit(AddSectorAdminSuccess(response: response));
+        final Sectoradmin response = await _superAdminHomeRepository.deactivateSectorAdmin(id: event.id);
+        emit(DeactivateSectorAdminSuccess(response: response));
       }catch(e){
         if (e is ApiError) {
-          emit(AddSectorAdminFailure(message: e.message.toString(), status: e.statusCode));
+          emit(DeactivateSectorAdminFailure(message: e.message.toString(), status: e.statusCode));
         }else{
-          emit(AddSectorAdminFailure(message: e.toString()));
+          emit(DeactivateSectorAdminFailure(message: e.toString()));
         }
       }
     });
 
-    on<GetComplaintDetails>((event, emit) async {
-      emit(GetComplaintDetailsLoading());
+    on<GetSelectionTechnician>((event, emit) async {
+      emit(GetSelectionTechnicianLoading());
       try {
-        final AdminComplaint response = await _superAdminHomeRepository.getComplaintDetails(id: event.id);
-        emit(GetComplaintDetailsSuccess(response: response));
+        final List<Technician> response = await _superAdminHomeRepository.getSelectionTechnician(technicianType: event.technicianType);
+        emit(GetSelectionTechnicianSuccess(response: response));
       } catch (e) {
         if (e is ApiError) {
           emit(
-            GetComplaintDetailsFailure(
+            GetSelectionTechnicianFailure(
               message: e.message.toString(),
               status: e.statusCode,
             ),
           );
         } else {
-          emit(GetComplaintDetailsFailure(message: e.toString()));
+          emit(GetSelectionTechnicianFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AssignTechnician>((event, emit) async {
+      emit(AssignTechnicianLoading());
+      try{
+        final AdminComplaint response = await _superAdminHomeRepository.assignTechnician(complaintId: event.complaintId, assignedWorker: event.assignedWorker);
+        emit(AssignTechnicianSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AssignTechnicianFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AssignTechnicianFailure(message: e.toString()));
         }
       }
     });
@@ -180,39 +224,6 @@ class SuperAdminHomeBloc extends Bloc<SuperAdminHomeEvent, SuperAdminHomeState> 
           );
         } else {
           emit(RejectResolutionFailure(message: e.toString()));
-        }
-      }
-    });
-
-    on<GetSelectionTechnician>((event, emit) async {
-      emit(GetSelectionTechnicianLoading());
-      try {
-        final List<Technician> response = await _superAdminHomeRepository.getSelectionTechnician(technicianType: event.technicianType);
-        emit(GetSelectionTechnicianSuccess(response: response));
-      } catch (e) {
-        if (e is ApiError) {
-          emit(
-            GetSelectionTechnicianFailure(
-              message: e.message.toString(),
-              status: e.statusCode,
-            ),
-          );
-        } else {
-          emit(GetSelectionTechnicianFailure(message: e.toString()));
-        }
-      }
-    });
-
-    on<AssignTechnician>((event, emit) async {
-      emit(AssignTechnicianLoading());
-      try{
-        final AdminComplaint response = await _superAdminHomeRepository.assignTechnician(complaintId: event.complaintId, assignedWorker: event.assignedWorker);
-        emit(AssignTechnicianSuccess(response: response));
-      }catch(e){
-        if (e is ApiError) {
-          emit(AssignTechnicianFailure(message: e.message.toString(), status: e.statusCode));
-        }else{
-          emit(AssignTechnicianFailure(message: e.toString()));
         }
       }
     });
