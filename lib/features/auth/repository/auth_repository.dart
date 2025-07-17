@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:complaint_portal/constants/server_constant.dart';
 import 'package:complaint_portal/utils/api_error.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +27,7 @@ class AuthRepository {
         },
         body: jsonEncode(data),
       );
-      debugPrint('Response Body : ${response.body}');
+
       final jsonBody = jsonDecode(response.body);
 
       if (response.statusCode == 401) {
@@ -133,7 +132,7 @@ class AuthRepository {
         'FCMToken': fcmToken,
       };
 
-      const apiKey = '${ServerConstant.baseUrl}/api/v1/users/update-fcm';
+      const apiKey = '${ServerConstant.baseUrl}/api/v1/user/update-fcm';
       final response = await http.post(
         Uri.parse(apiKey),
         headers: <String, String>{

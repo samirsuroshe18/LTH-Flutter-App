@@ -35,6 +35,8 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
   bool _isResolvedLoading = false;
   bool _isRejectLoading = false;
   bool _isSaveLoading = false;
+  bool _isError = false;
+  String? errorMessage;
   int? statusCode;
   String complaintId = "...";
   DateTime? complaintDate;
@@ -156,7 +158,9 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
               );
             } else if (_isLoading) {
               return const CustomLoader();
-            } else {
+            } else if (_isError == true && statusCode == 403 || statusCode == 401) {
+              return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
+            }  else {
               return BuildErrorState(onRefresh: _onRefresh);
             }
           },
@@ -845,9 +849,11 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
   void _blocListener(BuildContext context, SectorAdminHomeState state) {
     if (state is SectorAssignTechnicianLoading) {
       _isSaveLoading = true;
+      _isError = false;
     }
     if (state is SectorAssignTechnicianSuccess) {
       _isSaveLoading = false;
+      _isError = false;
       complaintModel = state.response;
       resolutionStatus = complaintModel?.resolution?.status ?? 'pending';
       setState(() {
@@ -856,27 +862,32 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
         complaintDate = complaintModel!.createdAt!;
       });
     }
-
     if (state is SectorAssignTechnicianFailure) {
       _isSaveLoading = false;
+      _isError = true;
+      statusCode = state.status;
+      errorMessage = state.message;
       CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
     }
 
     if (state is SectorApproveResolutionLoading) {
+      _isError = false;
       setState(() {
         _isResolvedLoading = true;
       });
     }
-
     if (state is SectorApproveResolutionSuccess) {
+      _isError = false;
       setState(() {
         _isResolvedLoading = false;
         complaintModel = state.response;
         isResolved = state.response.status == 'Resolved';
       });
     }
-
     if (state is SectorApproveResolutionFailure) {
+      _isError = true;
+      statusCode = state.status;
+      errorMessage = state.message;
       setState(() {
         _isResolvedLoading = false;
       });
@@ -884,20 +895,23 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
     }
 
     if (state is SectorRejectResolutionLoading) {
+      _isError = false;
       setState(() {
         _isRejectLoading = true;
       });
     }
-
     if (state is SectorRejectResolutionSuccess) {
+      _isError = false;
       setState(() {
         _isRejectLoading = false;
         complaintModel = state.response;
         isResolved = state.response.status == 'Resolved';
       });
     }
-
     if (state is SectorRejectResolutionFailure) {
+      _isError = true;
+      statusCode = state.status;
+      errorMessage = state.message;
       setState(() {
         _isRejectLoading = false;
       });
@@ -905,12 +919,13 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
     }
 
     if (state is GetSectorComplaintDetailsLoading) {
+      _isError = false;
       setState(() {
         _isLoading = true;
       });
     }
-
     if (state is GetSectorComplaintDetailsSuccess) {
+      _isError = false;
       setState(() {
         _isLoading = false;
         complaintModel = state.response;
@@ -920,8 +935,9 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
         complaintDate = complaintModel!.createdAt!;
       });
     }
-
     if (state is GetSectorComplaintDetailsFailure) {
+      _isError = true;
+      errorMessage = state.message;
       complaintModel = null;
       _isLoading = false;
       statusCode = state.status;
@@ -929,12 +945,13 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
     }
 
     if (state is SectorReopenCompliantLoading) {
+      _isError = false;
       setState(() {
         _isProcessing = true;
       });
     }
-
     if (state is SectorReopenCompliantSuccess) {
+      _isError = false;
       setState(() {
         _isProcessing = false;
         complaintModel = state.response;
@@ -942,6 +959,8 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
       });
     }
     if (state is SectorReopenCompliantFailure) {
+      _isError = true;
+      errorMessage = state.message;
       setState(() {
         complaintModel = null;
         _isProcessing = false;

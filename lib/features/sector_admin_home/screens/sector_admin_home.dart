@@ -5,6 +5,7 @@ import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/sector_dashboard_overview.dart';
+import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,6 +21,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
+  String? errorMessage;
   String selectedSector = 'All Sectors';
   String selectedTimeRange = 'Last 30 Days';
   BuildContext? _dialogContext;
@@ -28,6 +30,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
   @override
   void initState() {
     super.initState();
+    NotificationController.requestNotificationPermission();
     final authBloc = context.read<AuthBloc>();
     final UserModel? userState = authBloc.currentUser;
     if (userState != null) {
@@ -89,6 +92,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
                 _isLoading = false;
                 _isError = true;
                 statusCode = state.status;
+                errorMessage = state.message;
                 CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
               }
             },
@@ -108,8 +112,10 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
                 );
               } else if (_isLoading) {
                 return const CustomLoader();
-              } else if (data != null && _isError == true && statusCode == 401) {
-                return BuildErrorState(onRefresh: _onRefresh);
+              } else if (data == null && _isError == true && statusCode == 401) {
+                return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
+              } else if (_isError == true && statusCode == 403) {
+                return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
               } else {
                 return BuildErrorState(onRefresh: _onRefresh);
               }

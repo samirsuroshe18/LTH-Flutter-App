@@ -5,6 +5,7 @@ import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
 import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
+import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,6 +29,7 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
   @override
   void initState() {
     super.initState();
+    NotificationController.requestNotificationPermission();
     final authBloc = context.read<AuthBloc>();
     final UserModel? userState = authBloc.currentUser;
     if (userState != null) {

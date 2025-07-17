@@ -10,6 +10,7 @@ import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/widgets/assign_complaint_card.dart';
+import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -31,11 +32,12 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   bool _isLazyLoading = false;
   bool _isError = false;
   int? statusCode;
+  String? errorMessage;
   int _page = 1;
   final int _limit = 10;
   bool _hasMore = true;
   String _searchQuery = '';
-  String _selectedEntryType = '';
+  String _selectedStatus = '';
   DateTime? _startDate;
   DateTime? _endDate;
   bool _hasActiveFilters = false;
@@ -45,6 +47,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   @override
   void initState() {
     super.initState();
+    NotificationController.requestNotificationPermission();
     final authBloc = context.read<AuthBloc>();
     final UserModel? userState = authBloc.currentUser;
     if (userState != null) {
@@ -80,8 +83,8 @@ class _TechnicianHomeState extends State<TechnicianHome> {
       queryParams['search'] = _searchQuery;
     }
 
-    if (_selectedEntryType.isNotEmpty) {
-      queryParams['entryType'] = _selectedEntryType;
+    if (_selectedStatus.isNotEmpty) {
+      queryParams['status'] = _selectedStatus;
     }
 
     if (_startDate != null) {
@@ -100,7 +103,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
       _page = 1;
       _hasMore = true;
       data.clear();
-      _hasActiveFilters = _selectedEntryType.isNotEmpty || _startDate != null || _endDate != null;
+      _hasActiveFilters = _selectedStatus.isNotEmpty || _startDate != null || _endDate != null;
     });
     _fetchEntries();
   }
@@ -190,7 +193,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
                         TextButton(
                           onPressed: () {
                             setModalState(() {
-                              _selectedEntryType = '';
+                              _selectedStatus = '';
                               _startDate = null;
                               _endDate = null;
                             });
@@ -210,11 +213,11 @@ class _TechnicianHomeState extends State<TechnicianHome> {
                     Wrap(
                       spacing: 8,
                       children: [
-                        _buildFilterChip('Delivery', 'delivery', setModalState),
-                        _buildFilterChip('Guest', 'guest', setModalState),
-                        _buildFilterChip('Cab', 'cab', setModalState),
-                        _buildFilterChip('Other', 'other', setModalState),
-                        _buildFilterChip('Service', 'service', setModalState),
+                        _buildFilterChip('Pending', 'pending', setModalState),
+                        _buildFilterChip('Under Review', 'under_review', setModalState),
+                        _buildFilterChip('In Progress', 'in_progress', setModalState),
+                        _buildFilterChip('Resolved', 'approved', setModalState),
+                        _buildFilterChip('Rejected', 'rejected', setModalState),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -292,10 +295,10 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   Widget _buildFilterChip(String label, String value, StateSetter setModalState) {
     return FilterChip(
       label: Text(label),
-      selected: _selectedEntryType == value,
+      selected: _selectedStatus == value,
       onSelected: (selected) {
         setModalState(() {
-          _selectedEntryType = selected ? value : '';
+          _selectedStatus = selected ? value : '';
         });
       },
     );
@@ -398,7 +401,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
             showLoadingDialog(context);
           }
           if(state is AuthLogoutSuccess){
-            Future.delayed(const Duration(seconds: 2), () {
+            Future.delayed(const Duration(seconds: 1), () {
               dismissLoadingDialog();
               CustomSnackBar.show(
                 context: context,
@@ -409,7 +412,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
             });
           }
           if(state is AuthLogoutFailure){
-            Future.delayed(const Duration(seconds: 2), () {
+            Future.delayed(const Duration(seconds: 1), () {
               dismissLoadingDialog();
               CustomSnackBar.show(
                 context: context,
@@ -423,7 +426,9 @@ class _TechnicianHomeState extends State<TechnicianHome> {
           return BlocConsumer<TechnicianHomeBloc, TechnicianHomeState>(
             listener: (context, state){
               if(state is GetAssignComplaintsLoading){
-                _isLoading = true;
+                setState(() {
+                  _isLoading = true;
+                });
                 _isError = false;
               }
               if(state is GetAssignComplaintsSuccess){
@@ -433,23 +438,30 @@ class _TechnicianHomeState extends State<TechnicianHome> {
                 data.addAll(state.response.technicianComplaints as Iterable<AssignComplaint>);
                 _page++;
                 _hasMore = state.response.pagination?.hasMore ?? false;
-                _isLoading = false;
+                setState(() {
+                  _isLoading = false;
+                });
                 _isLazyLoading = false;
                 _isError = false;
               }
               if(state is GetAssignComplaintsFailure){
                 data = [];
-                _isLoading = false;
+                setState(() {
+                  _isLoading = false;
+                });
                 _isLazyLoading = false;
                 _isError = true;
                 statusCode= state.status;
+                errorMessage= state.message;
                 _hasMore = false;
               }
               if(state is StartWorkLoading){
                 _isStartWork = true;
+                _isError = false;
               }
               if(state is StartWorkSuccess){
                 _isStartWork = false;
+                _isError = false;
                 final updatedComplaint = state.response; // Assuming this is your updated item
                 final index = data.indexWhere((item) => item.id == updatedComplaint.id);
 
@@ -460,6 +472,9 @@ class _TechnicianHomeState extends State<TechnicianHome> {
               }
               if(state is StartWorkFailure){
                 _isStartWork = false;
+                _isError = true;
+                statusCode = state.status;
+                errorMessage = state.message;
               }
             },
             builder: (context, state){
@@ -494,7 +509,9 @@ class _TechnicianHomeState extends State<TechnicianHome> {
               } else if (_isLoading && _isLazyLoading==false) {
                 return const CustomLoader();
               } else if (data.isEmpty && _isError == true && statusCode == 401) {
-                return BuildErrorState(onRefresh: _onRefresh);
+                return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
+              } else if (_isError == true && statusCode == 403) {
+                return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
               } else {
                 return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no assign queries available", kToolbarCount: 4,);
               }
