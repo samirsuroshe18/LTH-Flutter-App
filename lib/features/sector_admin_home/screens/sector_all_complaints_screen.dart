@@ -27,6 +27,7 @@ class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> wit
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
+  String? errorMessage;
   bool _isLazyLoading = false;
   int _page = 1;
   final int _limit = 10;
@@ -182,6 +183,7 @@ class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> wit
             _isLoading = false;
             _isLazyLoading = false;
             _isError = true;
+            errorMessage = state.message;
             statusCode= state.status;
             _hasMore = false;
           }
@@ -213,8 +215,10 @@ class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> wit
             );
           } else if (_isLoading && _isLazyLoading==false) {
             return const CustomLoader();
-          }else if (data.isEmpty && _isError == true && statusCode == 401) {
-            return BuildErrorState(onRefresh: _onRefresh);
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
+            return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
+          } else if (_isError == true && statusCode == 403) {
+            return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
           } else {
             return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no complaints", kToolbarCount: 4,);
           }

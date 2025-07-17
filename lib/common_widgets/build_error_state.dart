@@ -3,8 +3,9 @@ import 'package:lottie/lottie.dart';
 
 class BuildErrorState extends StatelessWidget {
   final Future<void> Function() onRefresh;
+  final String? errorMessage;
   final double kToolbarCount;
-  const BuildErrorState({super.key, required this.onRefresh, this.kToolbarCount = 3});
+  const BuildErrorState({super.key, required this.onRefresh, this.kToolbarCount = 3, this.errorMessage});
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +26,9 @@ class BuildErrorState extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 20),
-              const Text(
-                "Something went wrong!",
-                style: TextStyle(
+              Text(
+                errorMessage ?? "Something went wrong!",
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

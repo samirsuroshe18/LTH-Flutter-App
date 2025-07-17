@@ -74,6 +74,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         context.read<AuthBloc>().add(AuthUpdateFCM(FCMToken: newToken));
       }
     });
+    _updateFcm();
+  }
+
+  Future<void> _updateFcm() async {
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
+    if (mounted && fcmToken != null) {
+      context.read<AuthBloc>().add(AuthUpdateFCM(FCMToken: fcmToken));
+    }
   }
 
   @override
@@ -87,6 +95,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if(state == AppLifecycleState.detached){
       NotificationController.isInForeground = false;
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
