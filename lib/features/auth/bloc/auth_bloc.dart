@@ -27,6 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
           role: event.role
         );
+        _currentUser = response;
         emit(AuthLoginSuccess(response: response));
       } catch (e) {
         if (e is ApiError) {

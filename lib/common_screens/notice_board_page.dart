@@ -1,30 +1,30 @@
+import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
+import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
+import 'package:complaint_portal/features/super_admin_home/widgets/NoticeCard.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
-import 'package:complaint_portal/features/super_admin_home/widgets/complaint_card.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
-class ViewAllComplaintScreen extends StatefulWidget {
-  final String? status;
-  const ViewAllComplaintScreen({super.key, this.status});
-
+class NoticeBoardPage extends StatefulWidget {
+  const NoticeBoardPage({super.key});
   @override
-  State<ViewAllComplaintScreen> createState() => _ViewAllComplaintScreenState();
+  State<NoticeBoardPage> createState() => _NoticeBoardPageState();
 }
 
-class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with AutomaticKeepAliveClientMixin {
+class _NoticeBoardPageState extends State<NoticeBoardPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<AdminComplaint> data = [];
+  List<Notice> data = [];
   bool _isLoading = false;
   bool _isError = false;
   int? statusCode;
@@ -33,19 +33,24 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
   final int _limit = 10;
   bool _hasMore = true;
   String _searchQuery = '';
-  String _selectedStatus = '';
+  String _selectedCategory = '';
   DateTime? _startDate;
   DateTime? _endDate;
   bool _hasActiveFilters = false;
+  late final AuthBloc authBloc;
+  UserModel? user;
+  String? role;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
-    if(widget.status != null){
-      _selectedStatus = widget.status!;
-    }
     _fetchEntries();
+    _scrollController.addListener(_scrollListener);
+    authBloc = context.read<AuthBloc>();
+    user = authBloc.currentUser;
+    if (user != null) {
+      role = user?.role;
+    }
   }
 
   @override
@@ -74,8 +79,8 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
       queryParams['search'] = _searchQuery;
     }
 
-    if (_selectedStatus.isNotEmpty) {
-      queryParams['status'] = _selectedStatus;
+    if (_selectedCategory.isNotEmpty) {
+      queryParams['category'] = _selectedCategory;
     }
 
     if (_startDate != null) {
@@ -86,7 +91,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
       queryParams['endDate'] = DateFormat('yyyy-MM-dd').format(_endDate!);
     }
 
-    context.read<SuperAdminHomeBloc>().add(GetSupAdminComplaints(queryParams: queryParams));
+    context.read<SuperAdminHomeBloc>().add(NoticeBoardGetAllNotices(queryParams: queryParams));
   }
 
   void _applyFilters() {
@@ -94,7 +99,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
       _page = 1;
       _hasMore = true;
       data.clear();
-      _hasActiveFilters = _selectedStatus.isNotEmpty || _startDate != null || _endDate != null;
+      _hasActiveFilters = _selectedCategory.isNotEmpty || _startDate != null || _endDate != null;
     });
     _fetchEntries();
   }
@@ -138,18 +143,23 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'All Queries',
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        title: const Text(
+          'Notice Board',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
         ),
-        backgroundColor: Colors.blue[700],
-        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _onRefresh,
+            tooltip: 'Refresh Notices',
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: SearchFilterBar(
@@ -158,7 +168,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
-            isFilterButton: widget.status != null ? false : true,
+            isFilterButton: true,
             hasActiveFilters: _hasActiveFilters,
             onFilterPressed: () => _showFilterBottomSheet(context),
           ),
@@ -166,22 +176,23 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
       ),
       body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
         listener: (context, state) {
-          if (state is GetSupAdminComplaintsLoading) {
+          if (state is NoticeBoardGetAllNoticesLoading) {
             _isLoading = true;
             _isError = false;
           }
-          if (state is GetSupAdminComplaintsSuccess) {
-            if (_page == 1) {
+          if (state is NoticeBoardGetAllNoticesSuccess) {
+            if (state.response.pagination?.currentPage == 1) {
               data.clear();
+              _page=1;
             }
-            data.addAll(state.response.adminComplaints as Iterable<AdminComplaint>);
+            data.addAll(state.response.notices as Iterable<Notice>);
             _page++;
             _hasMore = state.response.pagination?.hasMore ?? false;
             _isLoading = false;
             _isLazyLoading = false;
             _isError = false;
           }
-          if (state is GetSupAdminComplaintsFailure) {
+          if (state is NoticeBoardGetAllNoticesFailure) {
             data = [];
             _isLoading = false;
             _isLazyLoading = false;
@@ -195,7 +206,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<AdminComplaint>(
+                child: SinglePaginatedListView<Notice>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -207,7 +218,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: AnimationLimiter(
-                child: SinglePaginatedListView<AdminComplaint>(
+                child: SinglePaginatedListView<Notice>(
                   data: data,
                   controller: _scrollController,
                   hasMore: _hasMore,
@@ -220,36 +231,73 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no complaints", kToolbarCount: 4,);
+            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no notices",);
           }
         },
       ),
+      floatingActionButton: role == 'superadmin' ? FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/create-notice-screen');
+          if (result != null && result is Notice) {
+            setState(() {
+              data.insert(0, result); // Insert at top
+            });
+
+            // Scroll to top after short delay to let the UI update
+            Future.delayed(Duration(milliseconds: 100), () {
+              _scrollController.animateTo(
+                0.0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            });
+          }
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add, color: Colors.white70),
+      ) : null,
     );
-  }
-
-  Future<void> _cardOnTap(AdminComplaint complaint) async {
-    final updatedComplaint = await Navigator.pushNamed(context, '/complaint-details-screen', arguments: complaint);
-
-    if (updatedComplaint != null && updatedComplaint is AdminComplaint) {
-      setState(() {
-        // Replace or update only the modified item in your list
-        int index = data.indexWhere((c) => c.id == updatedComplaint.id);
-        if (index != -1) {
-          data[index] = updatedComplaint;
-        }
-      });
-    }
   }
 
   Widget _itemBuilder(item, index) {
     return StaggeredListAnimation(
       index: index,
-      child: ComplaintCard(
-        complaint: item,
-        onTap: () => _cardOnTap(item),
+      child: NoticeCard(
+        data: item,
+        onTap: ()=> _onTap(index),
       ),
     );
   }
+
+  Future<void> _onTap (int index)async {
+    final result = await Navigator.pushNamed(context, '/notice-detail-screen', arguments: data[index]);
+    if (result != null && result is Notice) {
+      setState(() {
+        data[index] = result;
+      });
+      _scrollToIndex(index);
+    }
+
+    if (result == true) {
+      setState(() {
+        data.removeAt(index);
+      });
+      _scrollToIndex(index);
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    // Estimate item height if fixed, or use scrollable_positioned_list for variable height
+    double itemHeight = 200.0; // adjust to your item height
+    double offset = index * itemHeight;
+
+    _scrollController.animateTo(
+      offset,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
 
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -284,30 +332,13 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
                         TextButton(
                           onPressed: () {
                             setModalState(() {
-                              _selectedStatus = '';
+                              _selectedCategory = '';
                               _startDate = null;
                               _endDate = null;
                             });
                           },
                           child: const Text('Reset'),
                         ),
-                      ],
-                    ),
-                    // const SizedBox(height: 8),
-                    const Text(
-                      'Status',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        _buildFilterChip('Pending', 'Pending', setModalState),
-                        _buildFilterChip('In Progress', 'In Progress', setModalState),
-                        _buildFilterChip('Resolved', 'Resolved', setModalState),
-                        _buildFilterChip('Rejected', 'Rejected', setModalState),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -382,23 +413,8 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
     );
   }
 
-  Widget _buildFilterChip(String label, String value, StateSetter setModalState) {
-    return FilterChip(
-      label: Text(label),
-      selected: _selectedStatus == value,
-      onSelected: (selected) {
-        setModalState(() {
-          _selectedStatus = selected ? value : '';
-        });
-      },
-    );
-  }
-
   Future<void> _onRefresh() async {
     _page=1;
     await _fetchEntries();
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

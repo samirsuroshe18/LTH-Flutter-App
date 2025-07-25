@@ -96,19 +96,23 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
             },
             builder: (context, state) {
               if (data != null && _isLoading == false) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildStatsSection(),
-                      SizedBox(height: 24),
-                      _buildQuickActionsSection(),
-                      SizedBox(height: 24),
-                      // _buildFiltersSection(),
-                      // SizedBox(height: 24),
-                      // _buildRecentActivitySection(),
-                    ],
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: SingleChildScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatsSection(),
+                        SizedBox(height: 24),
+                        _buildQuickActionsSection(),
+                        SizedBox(height: 24),
+                        // _buildFiltersSection(),
+                        // SizedBox(height: 24),
+                        // _buildRecentActivitySection(),
+                      ],
+                    ),
                   ),
                 );
               } else if (_isLoading) {
@@ -529,7 +533,10 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      leading: Icon(Icons.dashboard, color: Colors.white,),
+      leading: Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Image.asset('assets/images/lth_logo.png', color: Colors.white,),
+      ),
       title: Text(
         'ComplaintDesk',
         style: TextStyle(
@@ -622,13 +629,15 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
               icon: Icons.pending_actions,
               color: Colors.orange[600]!,
               trend: '-12 from yesterday',
+              onTap: ()=> Navigator.pushNamed(context, '/view-all-complaint-screen', arguments: 'Pending'),
             ),
             _buildStatCard(
               title: 'In Progress and Reject Queries',
               value: '${data?.inProgressQueries != null ? data!.inProgressQueries.toString() : '0'} / ${data?.rejectedQueries != null ? data!.rejectedQueries.toString() : '0'}',
               icon: Icons.autorenew,
               color: Color(0xFFEF4444),
-              trend: 'All operational'
+              trend: 'All operational',
+              onTap: ()=> Navigator.pushNamed(context, '/view-all-complaint-screen', arguments: 'In Progress, Rejected'),
             ),
             _buildStatCard(
               title: 'Resolved Queries',
@@ -636,6 +645,7 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
               icon: Icons.check_circle,
               color: Colors.green[600]!,
               trend: '+89 this week',
+              onTap: ()=> Navigator.pushNamed(context, '/view-all-complaint-screen', arguments: 'Resolved'),
             ),
             _buildStatCard(
               title: 'Total Sector Admins',
@@ -741,22 +751,22 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
                 Navigator.pushNamed(context, '/view-all-complaint-screen');
               },
             ),
-            // _buildActionButton(
-            //   title: 'Generate Reports',
-            //   icon: Icons.assessment,
-            //   color: Colors.purple[600]!,
-            //   onTap: () {
-            //     // Handle generate reports
-            //   },
-            // ),
-            // _buildActionButton(
-            //   title: 'System Settings',
-            //   icon: Icons.settings,
-            //   color: Colors.orange[600]!,
-            //   onTap: () {
-            //     // Handle system settings
-            //   },
-            // ),
+            _buildActionButton(
+              title: 'Add Technical Staff',
+              icon: Icons.engineering,
+              color: Colors.purple[600]!,
+              onTap: () {
+                Navigator.pushNamed(context, '/create-worker-screen');
+              },
+            ),
+            _buildActionButton(
+              title: 'Notice',
+              icon: Icons.notifications,
+              color: Colors.orange[600]!,
+              onTap: () {
+                Navigator.pushNamed(context, '/notice-board-screen');
+              },
+            ),
           ],
         ),
       ],

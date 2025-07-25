@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/active_sector_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
+import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
 import 'package:complaint_portal/features/super_admin_home/models/sector_admin_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -238,6 +241,63 @@ class SuperAdminHomeBloc extends Bloc<SuperAdminHomeEvent, SuperAdminHomeState> 
           emit(ReopenCompliantFailure(message: e.message.toString(), status: e.statusCode));
         }else{
           emit(ReopenCompliantFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<NoticeBoardCreateNotice>((event, emit) async {
+      emit(NoticeBoardCreateNoticeLoading());
+      try{
+
+        final Notice response = await _superAdminHomeRepository.createNotice(title: event.title, description: event.description, file: event.file);
+        emit(NoticeBoardCreateNoticeSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(NoticeBoardCreateNoticeFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(NoticeBoardCreateNoticeFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<NoticeBoardGetAllNotices>((event, emit) async {
+      emit(NoticeBoardGetAllNoticesLoading());
+      try{
+        final NoticeBoardModel response = await _superAdminHomeRepository.getAllNotices(queryParams: event.queryParams);
+        emit(NoticeBoardGetAllNoticesSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(NoticeBoardGetAllNoticesFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(NoticeBoardGetAllNoticesFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<NoticeBoardUpdateNotice>((event, emit) async {
+      emit(NoticeBoardUpdateNoticeLoading());
+      try{
+        final Notice response = await _superAdminHomeRepository.updateNotice(id: event.id, title: event.title, description: event.description, file: event.file, image: event.image);
+        emit(NoticeBoardUpdateNoticeSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(NoticeBoardUpdateNoticeFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(NoticeBoardUpdateNoticeFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<NoticeBoardDeleteNotice>((event, emit) async {
+      emit(NoticeBoardDeleteNoticeLoading());
+      try{
+        final Notice response = await _superAdminHomeRepository.deleteNotice(id: event.id);
+        emit(NoticeBoardDeleteNoticeSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(NoticeBoardDeleteNoticeFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(NoticeBoardDeleteNoticeFailure(message: e.toString()));
         }
       }
     });

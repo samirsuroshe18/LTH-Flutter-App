@@ -58,7 +58,7 @@ class CustomCachedNetworkImage extends StatelessWidget {
             width: borderWidth,
           ),
         ),
-        child: imageUrl!= null && imageUrl!.isNotEmpty
+        child: imageUrl!= null && imageUrl!='N/A' && imageUrl!.isNotEmpty
             ? Image.asset(imageUrl!, width: size * 0.8, height: size * 0.8,)
             : Icon(errorImage, size: size * 0.8),
       ),
