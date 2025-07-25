@@ -46,7 +46,7 @@ class _CreateTechnicianScreenState extends State<CreateTechnicianScreen> {
       // Add all keys where value matches sectorType
       _technicianTypes.addAll(
           roles.entries
-              .where((entry) => entry.value == sectorType)
+              .where((entry) => entry.value == sectorType || user.role=='superadmin')
               .map((entry) => entry.key));
     }
   }

@@ -11,12 +11,17 @@ import 'package:complaint_portal/features/sector_admin_home/screens/sector_compl
 import 'package:complaint_portal/features/sector_admin_home/screens/sector_selection_screen.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/technician_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
+import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/active_sectors_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/admin_complaint_details_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/create_notice_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/create_sector_admin_screen.dart';
+import 'package:complaint_portal/common_screens/notice_board_page.dart';
+import 'package:complaint_portal/common_screens/notice_detail_page.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/sector_admin_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/super_admin_home.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/technician_selection_screen.dart';
+import 'package:complaint_portal/features/super_admin_home/screens/update_notice_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/view_all_complaints_screen.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/screens/submit_resolution_screen.dart';
@@ -72,15 +77,31 @@ class AppRoutes {
           return _animatedRoute(SectorComplaintDetailsScreen(complaintId: args as String, data: null,), name: '/sector-complaint-details-screen');
         }
       case '/view-all-complaint-screen':
-        return _animatedRoute(const ViewAllComplaintScreen(), name: '/view-all-complaint-screen');
+        if(args is String){
+          return _animatedRoute(ViewAllComplaintScreen(status: args), name: '/view-all-complaint-screen');
+        }else{
+          return _animatedRoute(const ViewAllComplaintScreen(), name: '/view-all-complaint-screen');
+        }
       case '/sector-all-complaint-screen':
-        return _animatedRoute(const SectorAllComplaintScreen(), name: '/sector-all-complaint-screen');
+        if(args is String){
+          return _animatedRoute(SectorAllComplaintScreen(status: args), name: '/sector-all-complaint-screen');
+        }else{
+          return _animatedRoute(const SectorAllComplaintScreen(), name: '/sector-all-complaint-screen');
+        }
       case '/create-worker-screen':
         return _animatedRoute(const CreateTechnicianScreen(), name: '/create-worker-screen');
       case '/tech-selection-screen':
         return _animatedRoute(TechnicianSelectionScreen(complaint: args as AdminComplaint), name: '/tech-selection-screen');
       case '/sector-selection-screen':
         return _animatedRoute(SectorSelectionScreen(complaint: args as SectorComplaint), name: '/sector-selection-screen');
+      case '/notice-board-screen':
+        return _animatedRoute(NoticeBoardPage(), name: '/notice-board-screen');
+      case '/notice-detail-screen':
+        return _animatedRoute(NoticeDetailPage(data: args as Notice,), name: '/notice-detail-screen');
+      case '/create-notice-screen':
+        return _animatedRoute(CreateNoticeScreen(), name: '/create-notice-screen');
+      case '/update-notice-screen':
+        return _animatedRoute(UpdateNoticeScreen(data: args as Notice), name: '/update-notice-screen');
       default:
         return _animatedRoute(const SplashScreen(), name: '/');
     }

@@ -14,7 +14,8 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
 
 class SectorAllComplaintScreen extends StatefulWidget {
-  const SectorAllComplaintScreen({super.key,});
+  final String? status;
+  const SectorAllComplaintScreen({super.key, this.status});
 
   @override
   State<SectorAllComplaintScreen> createState() => _SectorAllComplaintScreenState();
@@ -41,8 +42,11 @@ class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> wit
   @override
   void initState() {
     super.initState();
-    _fetchEntries();
     _scrollController.addListener(_scrollListener);
+    if(widget.status != null){
+      _selectedStatus = widget.status!;
+    }
+    _fetchEntries();
   }
 
   @override
@@ -155,7 +159,7 @@ class _SectorAllComplaintScreenState extends State<SectorAllComplaintScreen> wit
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
-            isFilterButton: true,
+            isFilterButton: widget.status != null ? false : true,
             hasActiveFilters: _hasActiveFilters,
             onFilterPressed: () => _showFilterBottomSheet(context),
           ),

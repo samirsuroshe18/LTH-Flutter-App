@@ -98,16 +98,20 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
             },
             builder: (context, state) {
               if (data != null && _isLoading == false) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildStatsSection(),
-                      SizedBox(height: 24),
-                      _buildQuickActionsSection(),
-                      SizedBox(height: 24),
-                    ],
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: SingleChildScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatsSection(),
+                        SizedBox(height: 24),
+                        _buildQuickActionsSection(),
+                        SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 );
               } else if (_isLoading) {
@@ -538,7 +542,10 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      leading: Icon(Icons.dashboard, color: Colors.white,),
+      leading: Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Image.asset('assets/images/lth_logo.png', color: Colors.white,),
+      ),
       title: Text(
         'ComplaintDesk',
         style: TextStyle(
@@ -631,13 +638,15 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
               icon: Icons.pending_actions,
               color: Colors.orange[600]!,
               trend: '-12 from yesterday',
+              onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'Pending'),
             ),
             _buildProfileStatCard(
                 title: 'In Progress and Reject Queries',
                 value: '${data?.inProgressQueries != null ? data!.inProgressQueries.toString() : '0'} / ${data?.rejectedQueries != null ? data!.rejectedQueries.toString() : '0'}',
                 icon: Icons.autorenew,
                 color: Color(0xFFEF4444),
-                trend: 'All operational'
+                trend: 'All operational',
+              onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'In Progress, Rejected'),
             ),
             _buildProfileStatCard(
               title: 'Resolved Queries',
@@ -645,6 +654,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
               icon: Icons.check_circle,
               color: Colors.green[600]!,
               trend: '+89 this week',
+              onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'Resolved'),
             ),
             _buildProfileStatCard(
               title: 'Total Technicians',
@@ -766,6 +776,14 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
             //     // Handle system settings
             //   },
             // ),
+            _buildProfileActionButton(
+              title: 'Notice',
+              icon: Icons.notifications,
+              color: Colors.orange[600]!,
+              onTap: () {
+                Navigator.pushNamed(context, '/notice-board-screen');
+              },
+            ),
           ],
         ),
       ],
