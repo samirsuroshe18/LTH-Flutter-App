@@ -142,7 +142,7 @@ class SectorAdminCard extends StatelessWidget {
                         _buildContactInfo(
                           theme,
                           icon: Icons.phone_outlined,
-                          text: data.phoneNo ?? "NA",
+                          text: data.phoneNo !=null && data.phoneNo!.isNotEmpty ? data.phoneNo! : "N/A",
                           color: Colors.green[600]!,
                         ),
                         const SizedBox(height: 8),

@@ -5,6 +5,8 @@ import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
+import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/technician_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/widgets/technician_card.dart';
@@ -36,10 +38,18 @@ class _TechnicianListScreenState extends State<TechnicianListScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _hasActiveFilters = false;
+  late final AuthBloc authBloc;
+  UserModel? user;
+  String? role;
 
   @override
   void initState() {
     super.initState();
+    authBloc = context.read<AuthBloc>();
+    user = authBloc.currentUser;
+    if (user != null) {
+      role = user?.role;
+    }
     _fetchEntries();
     _scrollController.addListener(_scrollListener);
   }
@@ -214,9 +224,38 @@ class _TechnicianListScreenState extends State<TechnicianListScreen> {
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "No data found",);
+            return DataNotFoundWidget(
+              onRefresh: _onRefresh,
+              title: "No Technical Staff Found",
+              subtitle: "Your technical team roster is empty. Add technical staff members to manage assignments and track their progress.",
+              buttonText: "Refresh Staff",
+              customIcon: Icons.engineering_outlined,
+              primaryColor: Colors.blue,
+              animationSize: 180,
+            );
           }
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/create-worker-screen');
+          if (result != null && result is Technician) {
+            setState(() {
+              data.insert(0, result); // Insert at top
+            });
+
+            // Scroll to top after short delay to let the UI update
+            Future.delayed(Duration(milliseconds: 100), () {
+              _scrollController.animateTo(
+                0.0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            });
+          }
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add, color: Colors.white70),
       ),
     );
   }

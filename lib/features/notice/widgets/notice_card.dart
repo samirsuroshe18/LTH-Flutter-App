@@ -1,6 +1,6 @@
 import 'package:complaint_portal/common_widgets/custom_cached_network_image.dart';
 import 'package:complaint_portal/common_widgets/custom_full_screen_image_viewer.dart';
-import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:flutter/material.dart';
 
 class NoticeCard extends StatelessWidget {

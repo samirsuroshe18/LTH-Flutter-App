@@ -28,7 +28,7 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<SuperAdminHomeBloc>().add(GetSelectionTechnician(technicianType: widget.complaint.category!));
+    context.read<SuperAdminHomeBloc>().add(GetSelectionTechnician(technicianType: widget.complaint.sector!));
   }
 
   @override
@@ -80,7 +80,15 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
           } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(padding: 16.0, color: Colors.grey, onRefresh: _onRefresh, infoMessage: 'No technician available for this category at the moment. Please create one to continue.',);
+            return DataNotFoundWidget(
+              onRefresh: _onRefresh,
+              title: "No Technical Staff Found",
+              subtitle: "Your technical team roster is empty. Add technical staff members to manage assignments and track their progress.",
+              buttonText: "Refresh Staff",
+              customIcon: Icons.engineering_outlined,
+              primaryColor: Colors.blue,
+              animationSize: 180,
+            );
           }
         },
       ),
@@ -88,6 +96,6 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen> {
   }
 
   Future<void> _onRefresh() async {
-    context.read<SuperAdminHomeBloc>().add(GetSelectionTechnician(technicianType: widget.complaint.category!));
+    context.read<SuperAdminHomeBloc>().add(GetSelectionTechnician(technicianType: widget.complaint.sector!));
   }
 }

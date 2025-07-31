@@ -241,36 +241,6 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
     );
   }
 
-  // Widget _buildStatusChip() {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  //     decoration: BoxDecoration(
-  //       color: _getStatusColor().withValues(alpha: 0.8),
-  //       borderRadius: BorderRadius.circular(20),
-  //       border: Border.all(color: _getStatusColor(), width: 1),
-  //     ),
-  //     child: Row(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         Icon(
-  //           complaintModel?.status == 'Pending' ? Icons.check_circle : Icons.schedule,
-  //           size: 16,
-  //           color: Colors.white,
-  //         ),
-  //         const SizedBox(width: 6),
-  //         Text(
-  //           complaintModel?.status ?? "NA",
-  //           style: TextStyle(
-  //             fontSize: 12,
-  //             fontWeight: FontWeight.w600,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildComplaintHeader(Color cardColor, Color textColor, Color subtextColor) {
     return Card(
       elevation: 2,
@@ -325,7 +295,7 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              complaintModel?.category ?? 'NA',
+                              complaintModel?.sector ?? 'NA',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.blue,
@@ -342,7 +312,7 @@ class _AdminComplaintDetailsScreenState extends State<AdminComplaintDetailsScree
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              complaintModel?.location ?? 'NA',
+                              complaintModel?.location?.name ?? 'NA',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: subtextColor,

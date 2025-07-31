@@ -5,6 +5,7 @@ import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/sector_dashboard_overview.dart';
+import 'package:complaint_portal/features/sector_admin_home/widgets/build_action_button.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,7 +109,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
                       children: [
                         _buildStatsSection(),
                         SizedBox(height: 24),
-                        _buildQuickActionsSection(),
+                        _buildQuickActionsSection(context),
                         SizedBox(height: 24),
                       ],
                     ),
@@ -641,12 +642,20 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
               onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'Pending'),
             ),
             _buildProfileStatCard(
-                title: 'In Progress and Reject Queries',
-                value: '${data?.inProgressQueries != null ? data!.inProgressQueries.toString() : '0'} / ${data?.rejectedQueries != null ? data!.rejectedQueries.toString() : '0'}',
+                title: 'In Progress Queries',
+                value: data?.inProgressQueries != null ? data!.inProgressQueries.toString() : '0',
                 icon: Icons.autorenew,
                 color: Color(0xFFEF4444),
                 trend: 'All operational',
-              onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'In Progress, Rejected'),
+                onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'In Progress'),
+            ),
+            _buildProfileStatCard(
+              title: 'Reject Queries',
+              value: data?.rejectedQueries != null ? data!.rejectedQueries.toString() : '0',
+              icon: Icons.engineering,
+              color: Colors.blue[600]!,
+              trend: '+3 this month',
+              onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'Rejected'),
             ),
             _buildProfileStatCard(
               title: 'Resolved Queries',
@@ -655,14 +664,6 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
               color: Colors.green[600]!,
               trend: '+89 this week',
               onTap: ()=> Navigator.pushNamed(context, '/sector-all-complaint-screen', arguments: 'Resolved'),
-            ),
-            _buildProfileStatCard(
-              title: 'Total Technicians',
-              value: data?.totalTechnician != null ? data!.totalTechnician.toString() : '0',
-              icon: Icons.engineering,
-              color: Colors.blue[600]!,
-              trend: '+3 this month',
-              onTap: ()=> Navigator.pushNamed(context, '/technician-list-screen'),
             ),
           ],
         ),
@@ -690,7 +691,7 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: 32),
               ),
               SizedBox(height: 12),
               Text(
@@ -710,11 +711,6 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              // SizedBox(height: 8),
-              // Text(
-              //   trend,
-              //   style: TextStyle(fontSize: 10, color: Colors.grey[500]),
-              // ),
             ],
           ),
         ),
@@ -722,114 +718,109 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
     );
   }
 
-  Widget _buildQuickActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
-        ),
-        SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          childAspectRatio: 2.5,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          children: [
-            _buildProfileActionButton(
-              title: 'Add Technician',
-              icon: Icons.person_add,
-              color: Colors.blue[600]!,
-              onTap: () {
-                Navigator.pushNamed(context, '/create-worker-screen');
-              },
-            ),
-            _buildProfileActionButton(
-              title: 'View All Queries',
-              icon: Icons.view_list,
-              color: Colors.green[600]!,
-              onTap: () {
-                // Handle view all queries
-                Navigator.pushNamed(context, '/sector-all-complaint-screen');
-              },
-            ),
-            // _buildActionButton(
-            //   title: 'Generate Reports',
-            //   icon: Icons.assessment,
-            //   color: Colors.purple[600]!,
-            //   onTap: () {
-            //     // Handle generate reports
-            //   },
-            // ),
-            // _buildActionButton(
-            //   title: 'System Settings',
-            //   icon: Icons.settings,
-            //   color: Colors.orange[600]!,
-            //   onTap: () {
-            //     // Handle system settings
-            //   },
-            // ),
-            _buildProfileActionButton(
-              title: 'Notice',
-              icon: Icons.notifications,
-              color: Colors.orange[600]!,
-              onTap: () {
-                Navigator.pushNamed(context, '/notice-board-screen');
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  Widget _buildQuickActionsSection(BuildContext context) {
+    final theme = Theme.of(context);
 
-  Widget _buildProfileActionButton({required String title, required IconData icon, required Color color, required VoidCallback onTap,}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              spreadRadius: 1,
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
         ),
-        padding: EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.dashboard,
+                  size: 20,
+                  color: theme.colorScheme.primary,
                 ),
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      'Manage your dashboard efficiently',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Action buttons
+          BuildActionButton(
+            title: 'View All Queries',
+            subtitle: 'Browse and manage all submitted queries',
+            icon: Icons.list_alt_rounded,
+            color: const Color(0xFF2563EB),
+            onTap: () => Navigator.pushNamed(context, '/sector-all-complaint-screen'),
+          ),
+
+          const SizedBox(height: 16),
+
+          BuildActionButton(
+            title: 'Notice Board',
+            subtitle: 'View announcements and important updates',
+            icon: Icons.campaign_rounded,
+            color: const Color(0xFF7C3AED),
+            showBadge: true, // Example: showing notification badge
+            onTap: () => Navigator.pushNamed(context, '/notice-board-screen'),
+          ),
+
+          const SizedBox(height: 16),
+
+          BuildActionButton(
+            title: 'Technical Staff Management',
+            subtitle: 'Oversee technical team and assignments',
+            icon: Icons.engineering_rounded,
+            color: const Color(0xFFDC2626),
+            onTap: () => Navigator.pushNamed(context, '/technician-list-screen'),
+          ),
+
+          const SizedBox(height: 16),
+
+          BuildActionButton(
+            title: 'Location Management',
+            subtitle: 'Configure service areas and zones',
+            icon: Icons.location_on_rounded,
+            color: const Color(0xFFEA580C),
+            onTap: () => Navigator.pushNamed(context, '/location-list-screen'),
+          ),
+        ],
       ),
     );
   }

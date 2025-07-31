@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:complaint_portal/constants/server_constant.dart';
+import 'package:complaint_portal/utils/auth_http_client.dart';
 import 'package:complaint_portal/utils/api_error.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 import 'package:complaint_portal/features/auth/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,13 +19,16 @@ class AuthRepository {
         'FCMToken': fcmToken,
         'role': role
       };
+
       const apiKey = '${ServerConstant.baseUrl}/api/v1/user/login';
-      final response = await http.post(
-        Uri.parse(apiKey),
-        headers: <String, String>{
+
+      final response = await AuthHttpClient.instance.post(
+        apiKey,
+        headers: {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(data),
+        requiresAuth: false
       );
 
       final jsonBody = jsonDecode(response.body);
@@ -62,15 +65,17 @@ class AuthRepository {
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
+      String? refreshToken = prefs.getString('refreshToken');
 
       const apiKey = '${ServerConstant.baseUrl}/api/v1/user/logout';
-      final response = await http.get(
-        Uri.parse(apiKey),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
+
+      final response = await AuthHttpClient.instance.get(
+          apiKey,
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': 'Bearer $refreshToken',
+          },
+          requiresAuth: false
       );
 
       final jsonBody = jsonDecode(response.body);
@@ -95,17 +100,10 @@ class AuthRepository {
 
   Future<UserModel> getUser() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
-
       const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/get-current-user';
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+
+      final response = await AuthHttpClient.instance.get(apiUrl);
+
       final jsonBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -125,21 +123,19 @@ class AuthRepository {
 
   Future<Map<String, dynamic>> updateFCM({required String fcmToken}) async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
-
       final Map<String, dynamic> data = {
         'FCMToken': fcmToken,
       };
 
       const apiKey = '${ServerConstant.baseUrl}/api/v1/user/update-fcm';
-      final response = await http.post(
-        Uri.parse(apiKey),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(data),
+
+      final response = await AuthHttpClient.instance.post(
+          apiKey,
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(data),
+          requiresAuth: true
       );
 
       final jsonBody = jsonDecode(response.body);
@@ -167,20 +163,19 @@ class AuthRepository {
         'newPassword': newPassword
       };
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? accessToken = prefs.getString('accessToken');
+      const apiKey = '${ServerConstant.baseUrl}/api/v1/user/change-password';
 
-      const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/change-password';
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(data),
+      final response = await AuthHttpClient.instance.post(
+          apiKey,
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(data),
+          requiresAuth: true
       );
 
       final jsonBody = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         return jsonBody;
       } else {
@@ -203,13 +198,15 @@ class AuthRepository {
         'email': email,
       };
 
-      const apiUrl = '${ServerConstant.baseUrl}/api/v1/user/forgot-password';
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(data),
+      const apiKey = '${ServerConstant.baseUrl}/api/v1/user/forgot-password';
+
+      final response = await AuthHttpClient.instance.post(
+          apiKey,
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(data),
+          requiresAuth: false
       );
 
       final jsonBody = jsonDecode(response.body);

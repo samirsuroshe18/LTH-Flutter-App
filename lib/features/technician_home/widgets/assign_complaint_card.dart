@@ -62,7 +62,7 @@ class AssignComplaintCard extends StatelessWidget {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      data.location ?? "NA",
+                      data.location?.name ?? "NA",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[700],

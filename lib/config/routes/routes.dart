@@ -2,6 +2,8 @@ import 'package:complaint_portal/common_widgets/error_screen.dart';
 import 'package:complaint_portal/features/auth/screens/change_password_screen.dart';
 import 'package:complaint_portal/features/auth/screens/forgot_password_screen.dart';
 import 'package:complaint_portal/features/auth/screens/login_screen.dart';
+import 'package:complaint_portal/features/location/screens/location_list_screen.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/sector_complaint_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/create_technician_screen.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/sector_admin_home.dart';
@@ -11,17 +13,16 @@ import 'package:complaint_portal/features/sector_admin_home/screens/sector_compl
 import 'package:complaint_portal/features/sector_admin_home/screens/sector_selection_screen.dart';
 import 'package:complaint_portal/features/sector_admin_home/screens/technician_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/models/admin_complaint_model.dart';
-import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/active_sectors_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/admin_complaint_details_screen.dart';
-import 'package:complaint_portal/features/super_admin_home/screens/create_notice_screen.dart';
+import 'package:complaint_portal/features/notice/screens/create_notice_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/create_sector_admin_screen.dart';
-import 'package:complaint_portal/common_screens/notice_board_page.dart';
-import 'package:complaint_portal/common_screens/notice_detail_page.dart';
+import 'package:complaint_portal/features/notice/screens/notice_board_page.dart';
+import 'package:complaint_portal/features/notice/screens/notice_detail_page.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/sector_admin_list_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/super_admin_home.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/technician_selection_screen.dart';
-import 'package:complaint_portal/features/super_admin_home/screens/update_notice_screen.dart';
+import 'package:complaint_portal/features/notice/screens/update_notice_screen.dart';
 import 'package:complaint_portal/features/super_admin_home/screens/view_all_complaints_screen.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/screens/submit_resolution_screen.dart';
@@ -102,6 +103,8 @@ class AppRoutes {
         return _animatedRoute(CreateNoticeScreen(), name: '/create-notice-screen');
       case '/update-notice-screen':
         return _animatedRoute(UpdateNoticeScreen(data: args as Notice), name: '/update-notice-screen');
+      case '/location-list-screen':
+        return _animatedRoute(const LocationListScreen(), name: '/location-list-screen');
       default:
         return _animatedRoute(const SplashScreen(), name: '/');
     }

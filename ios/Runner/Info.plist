@@ -45,5 +45,64 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	 <!-- Camera permission for image_picker -->
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs access to camera to take photos for complaints</string>
+
+    <!-- Photo Library permission for image_picker -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to photo library to select images for complaints</string>
+
+    <!-- For iOS 14+ limited photo library access -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>This app needs access to save images to your photo library</string>
+
+    <!-- Microphone permission (sometimes required with camera) -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app may need microphone access when recording videos</string>
+
+    <!-- File access for file_picker and document handling -->
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+
+    <!-- For accessing documents and files -->
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>This app needs access to documents folder to manage complaint files</string>
+
+    <!-- For local notifications and Firebase messaging -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+        <string>background-fetch</string>
+    </array>
+
+    <!-- Support for various document types -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>PDF Document</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.adobe.pdf</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.image</string>
+            </array>
+        </dict>
+    </array>
+
 </dict>
 </plist>

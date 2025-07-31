@@ -297,7 +297,7 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              complaintModel?.category ?? 'NA',
+                              complaintModel?.sector ?? 'NA',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.blue,
@@ -314,7 +314,7 @@ class _SectorComplaintDetailsScreenState extends State<SectorComplaintDetailsScr
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              complaintModel?.location ?? 'NA',
+                              complaintModel?.location?.name ?? 'NA',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: subtextColor,

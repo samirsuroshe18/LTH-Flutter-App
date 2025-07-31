@@ -51,35 +51,6 @@ class MediaPickerHelper {
     return null;
   }
 
-  // static Future<File?> pickImageFile({required BuildContext context, required ImageSource source, int maxSizeInMB = 1,}) async {
-  //   final ImagePicker picker = ImagePicker();
-  //
-  //   try {
-  //     final XFile? image = await picker.pickImage(source: source);
-  //
-  //     if (image != null) {
-  //       final int fileSize = await File(image.path).length();
-  //       final String ext = path.extension(image.path).toLowerCase();
-  //
-  //       if (fileSize > maxSizeInMB * 1024 * 1024) {
-  //         _showErrorSnackBar(context, 'Image size should not exceed $maxSizeInMB MB');
-  //         return null;
-  //       }
-  //
-  //       if (!supportedImageTypes.contains(ext)) {
-  //         _showErrorSnackBar(context, 'Only JPG, JPEG or PNG images are allowed');
-  //         return null;
-  //       }
-  //
-  //       return File(image.path);
-  //     }
-  //   } catch (e) {
-  //     _showErrorSnackBar(context, 'Error picking image: $e');
-  //   }
-  //
-  //   return null;
-  // }
-
   static Future<File?> pickImageFile({
     required BuildContext context,
     required ImageSource source,
