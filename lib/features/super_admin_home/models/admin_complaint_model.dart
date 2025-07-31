@@ -31,10 +31,9 @@ class AdminComplaintModel {
 class AdminComplaint {
   final String? id;
   final String? complaintId;
-  final String? category;
   final String? description;
   final String? image;
-  final String? location;
+  final AdminComplaintLocation? location;
   final String? sector;
   final String? status;
   final String? assignStatus;
@@ -48,7 +47,6 @@ class AdminComplaint {
   AdminComplaint({
     this.id,
     this.complaintId,
-    this.category,
     this.description,
     this.image,
     this.location,
@@ -66,10 +64,9 @@ class AdminComplaint {
   factory AdminComplaint.fromJson(Map<String, dynamic> json) => AdminComplaint(
     id: json["_id"],
     complaintId: json["complaintId"],
-    category: json["category"],
     description: json["description"],
     image: json["image"],
-    location: json["location"],
+    location: json["location"] == null ? null : AdminComplaintLocation.fromJson(json["location"]),
     sector: json["sector"],
     status: json["status"],
     assignStatus: json["assignStatus"],
@@ -84,10 +81,9 @@ class AdminComplaint {
   Map<String, dynamic> toJson() => {
     "_id": id,
     "complaintId": complaintId,
-    "category": category,
     "description": description,
     "image": image,
-    "location": location,
+    "location": location?.toJson(),
     "sector": sector,
     "status": status,
     "assignStatus": assignStatus,
@@ -185,6 +181,26 @@ class Resolution {
     "updatedAt": updatedAt?.toIso8601String(),
     "__v": v,
     "approvedBy": approvedBy?.toJson(),
+  };
+}
+
+class AdminComplaintLocation {
+  final String? id;
+  final String? name;
+
+  AdminComplaintLocation({
+    this.id,
+    this.name,
+  });
+
+  factory AdminComplaintLocation.fromJson(Map<String, dynamic> json) => AdminComplaintLocation(
+    id: json["_id"],
+    name: json["name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "name": name,
   };
 }
 

@@ -91,7 +91,7 @@ class SectorAdminHomeBloc extends Bloc<SectorAdminHomeEvent, SectorAdminHomeStat
     on<GetTechnician>((event, emit) async {
       emit(GetTechnicianLoading());
       try {
-        final TechnicianModel response = await _sectorAdminHomeRepository.getTechnician();
+        final TechnicianModel response = await _sectorAdminHomeRepository.getTechnician(queryParams: event.queryParams);
         emit(GetTechnicianSuccess(response: response));
       } catch (e) {
         if (e is ApiError) {

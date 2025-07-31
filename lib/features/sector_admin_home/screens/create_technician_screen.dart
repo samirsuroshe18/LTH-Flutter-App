@@ -24,30 +24,28 @@ class _CreateTechnicianScreenState extends State<CreateTechnicianScreen> {
   bool _isLoading = false;
   late String sectorType;
   final List<String> _technicianTypes = [];
-
-  final Map<String, String> roles = {
-    'Light': 'Maintenance',
-    'AC': 'Maintenance',
-    'Telephone': 'IT',
-    'Technical': 'IT',
-    'HouseKeeping': 'Housekeeping',
-    'Carpentry': 'Maintenance',
-    'Danger': 'Security',
-    'Other': 'Services',
-  };
+  final List<String> roles = [
+    'Housekeeping',
+    'Carpentry',
+    'Telephone',
+    'Electrical',
+    'Technical',
+    'Unsafe Condition',
+    'Air Conditioning',
+    'Others'
+  ];
 
   @override
   void initState() {
     super.initState();
     final authBloc = context.read<AuthBloc>();
     final UserModel? user = authBloc.currentUser;
+
     if (user != null) {
       sectorType = user.sectorType ?? 'NA';
-      // Add all keys where value matches sectorType
       _technicianTypes.addAll(
-          roles.entries
-              .where((entry) => entry.value == sectorType || user.role=='superadmin')
-              .map((entry) => entry.key));
+          roles.where((role) => user.role == 'superadmin' || role == sectorType)
+      );
     }
   }
 
@@ -133,6 +131,7 @@ class _CreateTechnicianScreenState extends State<CreateTechnicianScreen> {
             _phoneController.clear();
             _passwordController.clear();
             _selectedTechnician = null;
+            Navigator.of(context).pop(state.response);
             CustomSnackBar.show(context: context, message: "Technician created successfully.", type: SnackBarType.success);
           }
           if (state is CreateTechnicianFailure) {

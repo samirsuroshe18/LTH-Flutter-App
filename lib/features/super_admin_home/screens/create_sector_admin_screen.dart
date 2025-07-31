@@ -23,11 +23,14 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
   bool _isLoading = false;
 
   final List<String> _sectorTypes = [
-    'Security',
     'Housekeeping',
-    'Maintenance',
-    'IT',
-    'General Services'
+    'Carpentry',
+    'Telephone',
+    'Electrical',
+    'Technical',
+    'Unsafe Condition',
+    'Air Conditioning',
+    'Others'
   ];
 
   @override
@@ -112,7 +115,8 @@ class _CreateSectorAdminScreenState extends State<CreateSectorAdminScreen> {
             _phoneController.clear();
             _passwordController.clear();
             _selectedSector = null;
-            CustomSnackBar.show(context: context, message: state.response['message'], type: SnackBarType.success);
+            Navigator.of(context).pop(state.response);
+            CustomSnackBar.show(context: context, message: 'Sector admin created successfully', type: SnackBarType.success);
           }
           if (state is AddSectorAdminFailure) {
             _isLoading = false;

@@ -65,7 +65,7 @@ class SectorComplaintCard extends StatelessWidget {
                 _buildInfoRow(
                   icon: Icons.location_on,
                   iconColor: Colors.red.shade400,
-                  text: complaint.location ?? 'No location provided',
+                  text: complaint.location?.name ?? 'No location provided',
                   isTitle: true,
                 ),
 

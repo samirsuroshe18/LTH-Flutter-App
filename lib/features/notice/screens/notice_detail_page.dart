@@ -1,8 +1,8 @@
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
+import 'package:complaint_portal/features/notice/bloc/notice_bloc.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,39 +19,30 @@ class NoticeDetailPage extends StatefulWidget {
 }
 
 class _NoticeDetailPageState extends State<NoticeDetailPage> {
-  late TextEditingController _titleController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _imageUrlController;
   late final AuthBloc authBloc;
   UserModel? user;
   String? role;
+  late Notice displayedNotice;
   Notice? updatedData;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.data.title);
-    _descriptionController = TextEditingController(text: widget.data.description);
-    _imageUrlController = TextEditingController(text: widget.data.image ?? '');
     authBloc = context.read<AuthBloc>();
     user = authBloc.currentUser;
     if (user != null) {
       role = user?.role;
     }
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _imageUrlController.dispose();
-    super.dispose();
+    displayedNotice = widget.data;
   }
 
   Future<void> _toggleEdit() async {
-    final result = await Navigator.pushNamed(context, '/update-notice-screen', arguments: widget.data);
+    final result = await Navigator.pushNamed(context, '/update-notice-screen', arguments: displayedNotice);
     if(result!=null && result is Notice){
       updatedData = result;
+      setState(() {
+        displayedNotice = updatedData!;
+      });
     }
   }
 
@@ -60,7 +51,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
     final bool? result = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+        return BlocConsumer<NoticeBloc, NoticeState>(
           listener: (context, state) {
 
             if(state is NoticeBoardDeleteNoticeLoading){
@@ -137,8 +128,8 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                             onPressed: isLoading
                                 ? null
                                 : () {
-                              context.read<SuperAdminHomeBloc>().add(
-                                  NoticeBoardDeleteNotice(id: widget.data.id!)
+                              context.read<NoticeBloc>().add(
+                                  NoticeBoardDeleteNotice(id: displayedNotice.id!)
                               );
                             },
                             style: TextButton.styleFrom(
@@ -242,7 +233,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image Section
-              if (widget.data.image != null && widget.data.image!.isNotEmpty)
+              if (displayedNotice.image != null && displayedNotice.image!.isNotEmpty)
                 Container(
                   height: 250,
                   width: double.infinity,
@@ -257,7 +248,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      widget.data.image!,
+                      displayedNotice.image!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -333,7 +324,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                   children: [
                     // Title Section
                     Text(
-                      widget.data.title ?? 'N/A',
+                      displayedNotice.title ?? 'N/A',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -345,7 +336,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
 
                     // Description Section
                     Text(
-                      widget.data.description ?? 'N/A',
+                      displayedNotice.description ?? 'N/A',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
@@ -393,7 +384,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                                     ),
                                   ),
                                   Text(
-                                    widget.data.createdBy?.userName ?? 'N/A',
+                                    displayedNotice.createdBy?.userName ?? 'N/A',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -432,7 +423,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                                     ),
                                   ),
                                   Text(
-                                    widget.data.createdAt!=null?_formatDate(widget.data.createdAt!):'N/A',
+                                    displayedNotice.createdAt!=null?_formatDate(displayedNotice.createdAt!):'N/A',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,

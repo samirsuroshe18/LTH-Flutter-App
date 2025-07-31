@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:complaint_portal/utils/route_observer_with_stack.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class NotificationController {
   static bool isInForeground = false;
 
   static Future<void> initializeLocalNotifications() async {
-    const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
+    const androidInit = AndroidInitializationSettings("ic_notification_logo");
 
     const iosInit = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -70,7 +71,7 @@ class NotificationController {
           NotificationConstant.channelName,
           description: NotificationConstant.channelDesc,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound('notification_sound'),
+          sound: RawResourceAndroidNotificationSound('res_notification_sound'),
           importance: Importance.max,
           enableLights: true,
           enableVibration: true
@@ -221,6 +222,16 @@ class NotificationController {
           currentState?.pushNamed('/sector-complaint-details-screen', arguments: payload['complaintId']);
         });
       }
+    } else if (payload['action'] == 'NOTIFY_NOTICE' && isInForeground == true) {
+      if(getCurrentRouteName() == '/notice-detail-screen'){
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushReplacementNamed('/notice-detail-screen', arguments: Notice.fromJson(jsonDecode(payload['noticeData'])));
+        });
+      }else{
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          currentState?.pushNamed('/notice-detail-screen', arguments: Notice.fromJson(jsonDecode(payload['noticeData'])));
+        });
+      }
     }
   }
 
@@ -234,6 +245,7 @@ class NotificationController {
       case "REOPEN_COMPLAINT":
       case "RESOLUTION_APPROVED":
       case "RESOLUTION_REJECTED":
+      case "NOTIFY_NOTICE":
         return payload['title'] ?? "Notification";
       default:
         return payload['title'] ?? "Notification";
@@ -250,6 +262,7 @@ class NotificationController {
       case "REOPEN_COMPLAINT":
       case "RESOLUTION_APPROVED":
       case "RESOLUTION_REJECTED":
+      case "NOTIFY_NOTICE":
         return payload['message'] ?? payload['body'] ?? "You have a new notification";
       default:
         return payload['body'] ?? "You have a new notification";

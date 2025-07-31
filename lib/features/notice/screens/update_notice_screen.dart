@@ -1,24 +1,35 @@
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
+import 'package:complaint_portal/features/notice/bloc/notice_bloc.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class CreateNoticeScreen extends StatefulWidget {
-  const CreateNoticeScreen({super.key});
+class UpdateNoticeScreen extends StatefulWidget {
+  final Notice data;
+  const UpdateNoticeScreen({super.key, required this.data});
 
   @override
-  State<CreateNoticeScreen> createState() => _CreateNoticeScreenState();
+  State<UpdateNoticeScreen> createState() => _UpdateNoticeScreenState();
 }
 
-class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
+class _UpdateNoticeScreenState extends State<UpdateNoticeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   File? _selectedImage;
+  String? _imageUrl;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.text = widget.data.title ?? 'N/A';
+    _descriptionController.text = widget.data.description ?? 'N/A';
+    _imageUrl = widget.data.image;
+  }
 
   @override
   void dispose() {
@@ -98,11 +109,13 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
 
   Future<void> _submitNotice() async {
     if (_formKey.currentState!.validate()) {
-      context.read<SuperAdminHomeBloc>().add(
-        NoticeBoardCreateNotice(
+      context.read<NoticeBloc>().add(
+        NoticeBoardUpdateNotice(
+          id: widget.data.id!,
           title: _titleController.text,
           description: _descriptionController.text,
           file: _selectedImage,
+          image: _imageUrl,
         ),
       );
     }
@@ -115,24 +128,24 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         title: Text(
-          'Create Notice',
+          'Update Notice',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<NoticeBloc, NoticeState>(
         listener: (context, state) {
-          if (state is NoticeBoardCreateNoticeLoading) {
+          if (state is NoticeBoardUpdateNoticeLoading) {
             _isLoading = true;
           }
-          if (state is NoticeBoardCreateNoticeSuccess) {
+          if (state is NoticeBoardUpdateNoticeSuccess) {
             _isLoading = false;
             Navigator.of(context).pop(state.response);
             CustomSnackBar.show(context: context, message: 'Notice created successfully!', type: SnackBarType.success);
           }
-          if (state is NoticeBoardCreateNoticeFailure) {
+          if (state is NoticeBoardUpdateNoticeFailure) {
             _isLoading = false;
             CustomSnackBar.show(context: context, message: state.message, type: SnackBarType.error);
           }
@@ -340,7 +353,7 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
                           ],
                         ),
                         SizedBox(height: 16),
-                        if (_selectedImage != null) ...[
+                        if (_selectedImage != null || _imageUrl!=null && _imageUrl!='N/A') ...[
                           Container(
                             height: 200,
                             width: double.infinity,
@@ -350,10 +363,7 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.file(
-                                _selectedImage!,
-                                fit: BoxFit.cover,
-                              ),
+                              child: _selectedImage != null ? Image.file(_selectedImage!, fit: BoxFit.cover) : Image.network(_imageUrl!, fit: BoxFit.cover),
                             ),
                           ),
                           SizedBox(height: 12),
@@ -378,6 +388,7 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
                                   onPressed: () {
                                     setState(() {
                                       _selectedImage = null;
+                                      _imageUrl = null;
                                     });
                                   },
                                   icon: Icon(Icons.delete_outline, size: 18, color: Colors.red),
@@ -493,7 +504,7 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
                           Icon(Icons.publish, size: 20),
                           SizedBox(width: 8),
                           Text(
-                            'Publish Notice',
+                            'Update Notice',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

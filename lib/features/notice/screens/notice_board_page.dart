@@ -1,8 +1,8 @@
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
-import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
-import 'package:complaint_portal/features/super_admin_home/models/notice_board_model.dart';
-import 'package:complaint_portal/features/super_admin_home/widgets/NoticeCard.dart';
+import 'package:complaint_portal/features/notice/bloc/notice_bloc.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
+import 'package:complaint_portal/features/notice/widgets/notice_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
@@ -91,7 +91,7 @@ class _NoticeBoardPageState extends State<NoticeBoardPage> {
       queryParams['endDate'] = DateFormat('yyyy-MM-dd').format(_endDate!);
     }
 
-    context.read<SuperAdminHomeBloc>().add(NoticeBoardGetAllNotices(queryParams: queryParams));
+    context.read<NoticeBloc>().add(NoticeBoardGetAllNotices(queryParams: queryParams));
   }
 
   void _applyFilters() {
@@ -164,7 +164,7 @@ class _NoticeBoardPageState extends State<NoticeBoardPage> {
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: SearchFilterBar(
             searchController: _searchController,
-            hintText: 'Search by name, mobile, etc.',
+            hintText: 'Search by title and description',
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
@@ -174,7 +174,7 @@ class _NoticeBoardPageState extends State<NoticeBoardPage> {
           ),
         ),
       ),
-      body: BlocConsumer<SuperAdminHomeBloc, SuperAdminHomeState>(
+      body: BlocConsumer<NoticeBloc, NoticeState>(
         listener: (context, state) {
           if (state is NoticeBoardGetAllNoticesLoading) {
             _isLoading = true;
@@ -231,11 +231,19 @@ class _NoticeBoardPageState extends State<NoticeBoardPage> {
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no notices",);
+            return DataNotFoundWidget(
+              onRefresh: _onRefresh,
+              title: "No Notices Available",
+              subtitle: "There are no announcements or important updates to display at the moment. Check back later for new notices.",
+              buttonText: "Refresh Notices",
+              customIcon: Icons.campaign_outlined,
+              primaryColor: Colors.blue,
+              animationSize: 180,
+            );
           }
         },
       ),
-      floatingActionButton: role == 'superadmin' ? FloatingActionButton(
+      floatingActionButton: role == 'superadmin' || role == 'sectoradmin' ? FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/create-notice-screen');
           if (result != null && result is Notice) {
@@ -297,7 +305,6 @@ class _NoticeBoardPageState extends State<NoticeBoardPage> {
       curve: Curves.easeInOut,
     );
   }
-
 
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(

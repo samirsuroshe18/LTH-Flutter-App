@@ -214,9 +214,36 @@ class _SectorAdminListScreenState extends State<SectorAdminListScreen> {
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "No data found",);
+            return DataNotFoundWidget(
+              onRefresh: _onRefresh,
+              title: "No Sector Admins Found",
+              subtitle: "No sector administrators have been added yet. Add administrators to manage different sectors effectively.",
+              buttonText: "Refresh List",
+              customIcon: Icons.admin_panel_settings_outlined,
+              primaryColor: Colors.blue,
+              animationSize: 180,
+            );
           }
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/create-sector-admin-screen');
+          if(result!=null && result is Sectoradmin){
+            setState(() {
+              data.insert(0, result);
+            });
+          }
+          // Scroll to top after short delay to let the UI update
+          Future.delayed(Duration(milliseconds: 100), () {
+            _scrollController.animateTo(
+              0.0,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

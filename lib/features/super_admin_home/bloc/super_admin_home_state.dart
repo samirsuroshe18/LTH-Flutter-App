@@ -99,7 +99,7 @@ final class DeactivateSectorAdminFailure extends SuperAdminHomeState{
 final class AddSectorAdminLoading extends SuperAdminHomeState{}
 
 final class AddSectorAdminSuccess extends SuperAdminHomeState{
-  final Map<String, dynamic> response;
+  final Sectoradmin response;
   AddSectorAdminSuccess({required this.response});
 }
 
@@ -198,63 +198,4 @@ final class ReopenCompliantFailure extends SuperAdminHomeState{
   final int? status;
 
   ReopenCompliantFailure( {required this.message, this.status});
-}
-/// Create notice
-final class NoticeBoardCreateNoticeLoading extends SuperAdminHomeState{}
-
-final class NoticeBoardCreateNoticeSuccess extends SuperAdminHomeState{
-  final Notice response;
-  NoticeBoardCreateNoticeSuccess({required this.response});
-}
-
-final class NoticeBoardCreateNoticeFailure extends SuperAdminHomeState{
-  final String message;
-  final int? status;
-
-  NoticeBoardCreateNoticeFailure( {required this.message, this.status});
-}
-
-/// get all notice
-final class NoticeBoardGetAllNoticesLoading extends SuperAdminHomeState{}
-
-final class NoticeBoardGetAllNoticesSuccess extends SuperAdminHomeState{
-  final NoticeBoardModel response;
-  NoticeBoardGetAllNoticesSuccess({required this.response});
-}
-
-final class NoticeBoardGetAllNoticesFailure extends SuperAdminHomeState{
-  final String message;
-  final int? status;
-
-  NoticeBoardGetAllNoticesFailure({required this.message, this.status});
-}
-
-/// Update notice
-final class NoticeBoardUpdateNoticeLoading extends SuperAdminHomeState{}
-
-final class NoticeBoardUpdateNoticeSuccess extends SuperAdminHomeState{
-  final Notice response;
-  NoticeBoardUpdateNoticeSuccess({required this.response});
-}
-
-final class NoticeBoardUpdateNoticeFailure extends SuperAdminHomeState{
-  final String message;
-  final int? status;
-
-  NoticeBoardUpdateNoticeFailure({required this.message, this.status});
-}
-
-/// delete notice
-final class NoticeBoardDeleteNoticeLoading extends SuperAdminHomeState{}
-
-final class NoticeBoardDeleteNoticeSuccess extends SuperAdminHomeState{
-  final Notice response;
-  NoticeBoardDeleteNoticeSuccess({required this.response});
-}
-
-final class NoticeBoardDeleteNoticeFailure extends SuperAdminHomeState{
-  final String message;
-  final int? status;
-
-  NoticeBoardDeleteNoticeFailure({required this.message, this.status});
 }

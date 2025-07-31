@@ -34,7 +34,7 @@ class SectorComplaint {
   final String? category;
   final String? description;
   final String? image;
-  final String? location;
+  final SectorComplaintLocation? location;
   final String? sector;
   final String? status;
   final String? assignStatus;
@@ -69,7 +69,7 @@ class SectorComplaint {
     category: json["category"],
     description: json["description"],
     image: json["image"],
-    location: json["location"],
+    location: json["location"] == null ? null : SectorComplaintLocation.fromJson(json["location"]),
     sector: json["sector"],
     status: json["status"],
     assignStatus: json["assignStatus"],
@@ -87,7 +87,7 @@ class SectorComplaint {
     "category": category,
     "description": description,
     "image": image,
-    "location": location,
+    "location": location?.toJson(),
     "sector": sector,
     "status": status,
     "assignStatus": assignStatus,
@@ -97,6 +97,26 @@ class SectorComplaint {
     "assignedBy": assignedBy?.toJson(),
     "resolution": resolution?.toJson(),
     "assignedWorker": assignedWorker?.toJson(),
+  };
+}
+
+class SectorComplaintLocation {
+  final String? id;
+  final String? name;
+
+  SectorComplaintLocation({
+    this.id,
+    this.name,
+  });
+
+  factory SectorComplaintLocation.fromJson(Map<String, dynamic> json) => SectorComplaintLocation(
+    id: json["_id"],
+    name: json["name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "name": name,
   };
 }
 

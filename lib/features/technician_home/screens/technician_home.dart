@@ -385,7 +385,7 @@ class _TechnicianHomeState extends State<TechnicianHome> {
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: SearchFilterBar(
             searchController: _searchController,
-            hintText: 'Search by name, mobile, etc.',
+            hintText: 'Search by complaint id and sectors.',
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
@@ -513,7 +513,15 @@ class _TechnicianHomeState extends State<TechnicianHome> {
               } else if (_isError == true && statusCode == 403) {
                 return BuildErrorState(onRefresh: _onRefresh, errorMessage: errorMessage,);
               } else {
-                return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no assign queries available", kToolbarCount: 4,);
+                return DataNotFoundWidget(
+                  onRefresh: _onRefresh,
+                  title: "No Complaints Assigned",
+                  subtitle: "There are no complaints currently assigned to you. New complaints will appear here once they're assigned to you.",
+                  buttonText: "Refresh Assignments",
+                  customIcon: Icons.assignment_outlined,
+                  primaryColor: Colors.blue,
+                  animationSize: 180,
+                );
               }
             },
           );

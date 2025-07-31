@@ -1,8 +1,12 @@
+import 'package:complaint_portal/constants/server_constant.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
+import 'package:complaint_portal/features/location/bloc/location_bloc.dart';
+import 'package:complaint_portal/features/notice/bloc/notice_bloc.dart';
 import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
 import 'package:complaint_portal/init_dependencies.dart';
+import 'package:complaint_portal/utils/auth_http_client.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:complaint_portal/utils/route_observer_with_stack.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,6 +37,12 @@ void main() async {
   ///Dependency Injection.
   await initDependencies();
 
+  AuthHttpClient.initialize(
+    serverBaseUrl: ServerConstant.baseUrl, // Your ServerConstant.baseUrl
+    refreshEndpoint: ServerConstant.refreshTokenEndpoint,
+    navKey: navigatorKey,
+  );
+
   runApp(
       MultiBlocProvider(
           providers: [
@@ -47,6 +57,12 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => serviceLocator<SectorAdminHomeBloc>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<LocationBloc>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<NoticeBloc>(),
             ),
           ],
           child: const MyApp()

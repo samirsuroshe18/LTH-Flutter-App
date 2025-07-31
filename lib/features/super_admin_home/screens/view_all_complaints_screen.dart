@@ -1,6 +1,7 @@
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
+// import 'package:complaint_portal/common_widgets/data_not_found_widget.dart';
 import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/single_paginated_list_view.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
@@ -136,13 +137,32 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
     _fetchEntries();
   }
 
+  String getAppBarTitleFromStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'Pending':
+        return 'Pending Queries';
+      case 'In Progress':
+        return 'In Progress Queries';
+      case 'Rejected':
+        return 'Rejected Queries';
+      case 'Resolved':
+        return 'Resolved Queries';
+      case 'All':
+      case null:
+      case '':
+        return 'All Queries';
+      default:
+        return '${status![0].toUpperCase()}${status.substring(1)} Queries';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'All Queries',
+          getAppBarTitleFromStatus(widget.status),
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -154,7 +174,7 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: SearchFilterBar(
             searchController: _searchController,
-            hintText: 'Search by name, mobile, etc.',
+            hintText: 'Search by complaint id and sectors.',
             searchQuery: _searchQuery,
             onSearchSubmitted: _onSearchSubmitted,
             onClearSearch: _onClearSearch,
@@ -220,7 +240,15 @@ class _ViewAllComplaintScreenState extends State<ViewAllComplaintScreen> with Au
           }else if (data.isEmpty && _isError == true && statusCode == 401) {
             return BuildErrorState(onRefresh: _onRefresh);
           } else {
-            return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "There are no complaints", kToolbarCount: 4,);
+            return DataNotFoundWidget(
+                onRefresh: _onRefresh,
+                title: "No Complaints Found",
+                subtitle: "Great news! You don't have any complaints at the moment. We're glad everything is working smoothly for you.",
+                buttonText: "Refresh",
+                customIcon: Icons.sentiment_satisfied_alt_outlined,
+                primaryColor: Colors.blue,
+                animationSize: 180,
+              );
           }
         },
       ),

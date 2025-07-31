@@ -34,7 +34,7 @@ class AssignComplaint {
   final String? category;
   final String? description;
   final String? image;
-  final String? location;
+  final TechnicianComplaintLocation? location;
   final String? sector;
   final String? status;
   final String? assignStatus;
@@ -69,7 +69,7 @@ class AssignComplaint {
     category: json["category"],
     description: json["description"],
     image: json["image"],
-    location: json["location"],
+    location: json["location"] == null ? null : TechnicianComplaintLocation.fromJson(json["location"]),
     sector: json["sector"],
     status: json["status"],
     assignStatus: json["assignStatus"],
@@ -87,7 +87,7 @@ class AssignComplaint {
     "category": category,
     "description": description,
     "image": image,
-    "location": location,
+    "location": location?.toJson(),
     "sector": sector,
     "status": status,
     "assignStatus": assignStatus,
@@ -129,6 +129,26 @@ class AssignedBy {
     "phoneNo": phoneNo,
     "email": email,
     "role": role,
+  };
+}
+
+class TechnicianComplaintLocation {
+  final String? id;
+  final String? name;
+
+  TechnicianComplaintLocation({
+    this.id,
+    this.name,
+  });
+
+  factory TechnicianComplaintLocation.fromJson(Map<String, dynamic> json) => TechnicianComplaintLocation(
+    id: json["_id"],
+    name: json["name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "name": name,
   };
 }
 

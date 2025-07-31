@@ -212,7 +212,15 @@ class _ActiveSectorsScreenState extends State<ActiveSectorsScreen> {
             }else if (data.isEmpty && _isError == true && statusCode == 401) {
               return BuildErrorState(onRefresh: _onRefresh);
             } else {
-              return DataNotFoundWidget(onRefresh: _onRefresh, infoMessage: "No data found",);
+              return DataNotFoundWidget(
+                onRefresh: _onRefresh,
+                title: "No Active Sectors Found",
+                subtitle: "You don't have any Active Sectors at the moment.",
+                buttonText: "Refresh",
+                customIcon: Icons.sentiment_satisfied_alt_outlined,
+                primaryColor: Colors.blue,
+                animationSize: 180,
+              );
             }
           },
         ),
