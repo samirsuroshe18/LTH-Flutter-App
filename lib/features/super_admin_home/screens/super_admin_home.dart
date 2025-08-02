@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:complaint_portal/features/super_admin_home/bloc/super_admin_home_bloc.dart';
 import 'package:complaint_portal/features/super_admin_home/models/dashboard_overview.dart';
 import 'package:complaint_portal/features/super_admin_home/widgets/build_action_button.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class SuperAdminHome extends StatefulWidget {
   const SuperAdminHome({super.key});
@@ -18,6 +22,7 @@ class SuperAdminHome extends StatefulWidget {
 }
 
 class _SuperAdminHomeState extends State<SuperAdminHome> {
+  NotificationAppLaunchDetails? notificationAppLaunchDetails;
   DashboardOverview? data;
   bool _isLoading = false;
   bool _isError = false;
@@ -26,6 +31,23 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
   String selectedTimeRange = 'Last 30 Days';
   BuildContext? _dialogContext;
   UserModel? user;
+
+  void getInitialAction() async {
+    notificationAppLaunchDetails = NotificationController.notificationAppLaunchDetails;
+    Map<String, dynamic>? payload;
+    if(notificationAppLaunchDetails?.notificationResponse?.payload != null){
+      payload = jsonDecode(notificationAppLaunchDetails!.notificationResponse!.payload!);
+    }
+    if (mounted ) {
+      if (notificationAppLaunchDetails != null && payload?['action'] == 'NOTIFY_NEW_COMPLAINT_ADMIN') {
+        Navigator.pushNamedAndRemoveUntil(context, '/complaint-details-screen', (route) => route.isFirst, arguments: payload?['complaintId']);
+      } else if (notificationAppLaunchDetails != null && payload?['action'] == 'REVIEW_RESOLUTION_ADMIN') {
+        Navigator.pushNamedAndRemoveUntil(context, '/complaint-details-screen', (route) => route.isFirst, arguments: payload?['complaintId']);
+      } else if (notificationAppLaunchDetails != null && payload?['action'] == 'NOTIFY_NOTICE') {
+        Navigator.pushNamedAndRemoveUntil(context, '/notice-detail-screen', (route) => route.isFirst, arguments: Notice.fromJson(jsonDecode(payload?['noticeData'])));
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -37,6 +59,9 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
       user = userState;
     }
     context.read<SuperAdminHomeBloc>().add(GetDashboardOverview());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getInitialAction();
+    });
   }
 
   @override

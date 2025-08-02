@@ -1063,7 +1063,7 @@ class _LocationListScreenState extends State<LocationListScreen> {
 
     CustomSnackBar.show(context: context, message: 'Downloading PDF...', type: SnackBarType.info);
 
-    final success = await PdfService.downloadLocationPDF(location.id!, location.name ?? 'N/A');
+    final success = await PdfService.downloadLocationPDF(location.id!, location.name ?? 'N/A', context);
 
     if (success) {
       CustomSnackBar.show(context: context, message: 'PDF downloaded successfully!', type: SnackBarType.success);
@@ -1080,7 +1080,7 @@ class _LocationListScreenState extends State<LocationListScreen> {
 
     CustomSnackBar.show(context: context, message: 'Downloading all locations PDF...', type: SnackBarType.info);
 
-    final success = await PdfService.downloadAllLocationsPDF();
+    final success = await PdfService.downloadAllLocationsPDF(context);
 
     if (success) {
       CustomSnackBar.show(context: context, message: 'All locations PDF downloaded successfully!', type: SnackBarType.success);

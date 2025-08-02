@@ -8,28 +8,22 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PdfService {
-  static Future<bool> downloadLocationPDF(
-    String id,
-    String locationName,
-  ) async {
+  static Future<bool> downloadLocationPDF(String id, String locationName, BuildContext context) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
 
       final response = await http.get(
-        Uri.parse(
-          '${ServerConstant.baseUrl}/api/v1/location/single-location-pdf/$id',
-        ),
+        Uri.parse('${ServerConstant.baseUrl}/api/v1/location/single-location-pdf/$id'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $accessToken',
         },
       );
+
       if (response.statusCode == 200) {
-        return await _savePDFToDownloads(
-          response.bodyBytes,
-          'location_${locationName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_qr.pdf',
-        );
+        final fileName = 'location_${locationName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_qr.pdf';
+        return await _savePDFToDownloads(response.bodyBytes, fileName, context);
       }
       return false;
     } catch (e) {
@@ -38,7 +32,7 @@ class PdfService {
     }
   }
 
-  static Future<bool> downloadAllLocationsPDF() async {
+  static Future<bool> downloadAllLocationsPDF(BuildContext context) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
@@ -52,9 +46,8 @@ class PdfService {
       );
 
       if (response.statusCode == 200) {
-        final fileName =
-            'all_locations_qr_${DateTime.now().toIso8601String().split('T')[0]}.pdf';
-        return await _savePDFToDownloads(response.bodyBytes, fileName);
+        final fileName = 'all_locations_qr_${DateTime.now().toIso8601String().split('T')[0]}.pdf';
+        return await _savePDFToDownloads(response.bodyBytes, fileName, context);
       }
       return false;
     } catch (e) {
@@ -63,27 +56,49 @@ class PdfService {
     }
   }
 
-  static Future<bool> _savePDFToDownloads(
-    List<int> bytes,
-    String fileName,
-  ) async {
+  static Future<bool> _savePDFToDownloads(List<int> bytes, String fileName, BuildContext context) async {
     try {
-      // Request storage permission
+      // Request MANAGE_EXTERNAL_STORAGE permission for Android
       if (Platform.isAndroid) {
-        var status = await Permission.storage.status;
+        PermissionStatus status = await Permission.manageExternalStorage.status;
+
         if (!status.isGranted) {
-          status = await Permission.storage.request();
-          if (!status.isGranted) {
+          // Show custom dialog explaining why we need this permission
+          bool? userConsent = await _showPermissionDialog(context);
+
+          if (userConsent == true) {
+            status = await Permission.manageExternalStorage.request();
+
+            if (!status.isGranted) {
+              return false;
+            }
+          } else {
             return false;
           }
         }
       }
 
-      // Get downloads directory
+      // Get the appropriate directory
       Directory? directory;
       if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
+        try {
+          // Try to use Downloads directory
+          directory = Directory('/storage/emulated/0/Download');
+
+          // Check if directory exists and is writable
+          if (!await directory.exists()) {
+            directory = await getExternalStorageDirectory();
+          } else {
+            // Test write permission by creating a temporary file
+            try {
+              final testFile = File('${directory.path}/.test_write_permission');
+              await testFile.writeAsString('test');
+              await testFile.delete();
+            } catch (e) {
+              directory = await getExternalStorageDirectory();
+            }
+          }
+        } catch (e) {
           directory = await getExternalStorageDirectory();
         }
       } else {
@@ -93,12 +108,45 @@ class PdfService {
       if (directory != null) {
         final file = File('${directory.path}/$fileName');
         await file.writeAsBytes(bytes);
+
         return true;
+      } else {
+        return false;
       }
-      return false;
     } catch (e) {
       debugPrint('Error saving PDF: $e');
       return false;
     }
+  }
+
+  // Helper method to show permission dialog
+  static Future<bool?> _showPermissionDialog(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('File Access Permission'),
+          content: const Text(
+              'This app needs permission to manage files to save PDFs to your Downloads folder. '
+                  'You will be redirected to Settings where you can grant "Allow management of all files" permission.'
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Grant Permission'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

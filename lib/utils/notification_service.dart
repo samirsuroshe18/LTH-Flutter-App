@@ -35,19 +35,6 @@ class NotificationController {
 
     notificationAppLaunchDetails = await _plugin.getNotificationAppLaunchDetails();
 
-    // Get any messages which caused the application to open from a terminated state.
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-
-    // Handle initial message if exists
-    if (initialMessage != null) {
-      _handleRemoteMessage(initialMessage);
-    }
-
-    // Background: Handle notification tap
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleRemoteMessage(message);
-    });
-
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       try {
         final int? id = message.data['notificationId'];
@@ -148,19 +135,6 @@ class NotificationController {
   @pragma('vm:entry-point')
   static void _onResponseBackground(NotificationResponse response) {
     _handleNotificationResponse(response);
-  }
-
-  // Handle RemoteMessage (for app launch from terminated state)
-  static void _handleRemoteMessage(RemoteMessage message) {
-    try {
-      if (message.data['action'] != null) {
-        final payload = message.data;
-        final action = message.data['action'] ?? '';
-        _navigateBasedOnAction(action, payload);
-      }
-    } catch (e) {
-      debugPrint('Error handling remote message: $e');
-    }
   }
 
   // Handle NotificationResponse (for notification taps)

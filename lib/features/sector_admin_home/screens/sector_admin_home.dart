@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:complaint_portal/features/sector_admin_home/bloc/sector_admin_home_bloc.dart';
 import 'package:complaint_portal/features/sector_admin_home/models/sector_dashboard_overview.dart';
 import 'package:complaint_portal/features/sector_admin_home/widgets/build_action_button.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class SectorAdminHome extends StatefulWidget {
   const SectorAdminHome({super.key});
@@ -18,6 +22,7 @@ class SectorAdminHome extends StatefulWidget {
 }
 
 class _SectorAdminHomeState extends State<SectorAdminHome> {
+  NotificationAppLaunchDetails? notificationAppLaunchDetails;
   SectorDashboardOverview? data;
   bool _isLoading = false;
   bool _isError = false;
@@ -27,6 +32,23 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
   String selectedTimeRange = 'Last 30 Days';
   BuildContext? _dialogContext;
   UserModel? user;
+
+  void getInitialAction() async {
+    notificationAppLaunchDetails = NotificationController.notificationAppLaunchDetails;
+    Map<String, dynamic>? payload;
+    if(notificationAppLaunchDetails?.notificationResponse?.payload != null){
+      payload = jsonDecode(notificationAppLaunchDetails!.notificationResponse!.payload!);
+    }
+    if (mounted ) {
+      if (notificationAppLaunchDetails != null && payload?['action'] == 'NOTIFY_NEW_COMPLAINT') {
+        Navigator.pushNamed(context, '/sector-complaint-details-screen', arguments: payload?['complaintId']);
+      } else if (notificationAppLaunchDetails != null && payload?['action'] == 'REVIEW_RESOLUTION') {
+        Navigator.pushNamed(context, '/sector-complaint-details-screen', arguments: payload?['complaintId']);
+      } else if (notificationAppLaunchDetails != null && payload?['action'] == 'NOTIFY_NOTICE') {
+        Navigator.pushNamed(context, '/notice-detail-screen', arguments: Notice.fromJson(jsonDecode(payload?['noticeData'])));
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -38,6 +60,9 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
       user = userState;
     }
     context.read<SectorAdminHomeBloc>().add(GetSectorDashboardOverview());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getInitialAction();
+    });
   }
 
   @override
