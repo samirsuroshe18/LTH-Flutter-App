@@ -215,7 +215,7 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context, updatedData),
           ),
-          actions: role=='superadmin' ? [
+          actions: role=='superadmin' || role=='sectoradmin' ? [
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               onPressed: _toggleEdit,

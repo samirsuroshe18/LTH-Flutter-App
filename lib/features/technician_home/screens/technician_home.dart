@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:complaint_portal/common_widgets/build_error_state.dart';
 import 'package:complaint_portal/common_widgets/custom_loader.dart';
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
@@ -7,12 +9,14 @@ import 'package:complaint_portal/common_widgets/search_filter_bar.dart';
 import 'package:complaint_portal/common_widgets/staggered_list_animation.dart';
 import 'package:complaint_portal/features/auth/bloc/auth_bloc.dart';
 import 'package:complaint_portal/features/auth/models/user_model.dart';
+import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
 import 'package:complaint_portal/features/technician_home/bloc/technician_home_bloc.dart';
 import 'package:complaint_portal/features/technician_home/models/technician_complaint_model.dart';
 import 'package:complaint_portal/features/technician_home/widgets/assign_complaint_card.dart';
 import 'package:complaint_portal/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
 
@@ -24,6 +28,7 @@ class TechnicianHome extends StatefulWidget {
 }
 
 class _TechnicianHomeState extends State<TechnicianHome> {
+  NotificationAppLaunchDetails? notificationAppLaunchDetails;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   List<AssignComplaint> data = [];
@@ -44,6 +49,19 @@ class _TechnicianHomeState extends State<TechnicianHome> {
   BuildContext? _dialogContext;
   UserModel? user;
 
+  void getInitialAction() async {
+    notificationAppLaunchDetails = NotificationController.notificationAppLaunchDetails;
+    Map<String, dynamic>? payload;
+    if(notificationAppLaunchDetails?.notificationResponse?.payload != null){
+      payload = jsonDecode(notificationAppLaunchDetails!.notificationResponse!.payload!);
+    }
+    if (mounted ) {
+      if (notificationAppLaunchDetails != null && payload?['action'] == 'NOTIFY_NOTICE') {
+        Navigator.pushNamedAndRemoveUntil(context, '/notice-detail-screen', (route) => route.isFirst, arguments: Notice.fromJson(jsonDecode(payload?['noticeData'])));
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +73,9 @@ class _TechnicianHomeState extends State<TechnicianHome> {
     }
     _fetchEntries();
     _scrollController.addListener(_scrollListener);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getInitialAction();
+    });
   }
 
   @override

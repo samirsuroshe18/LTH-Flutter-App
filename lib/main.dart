@@ -21,6 +21,25 @@ import 'firebase_options.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserverWithStack routeObserver = RouteObserverWithStack();
 
+@pragma('vm:entry-point')
+Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await NotificationController.initializeLocalNotifications();
+
+  try {
+    final int? id = message.data['notificationId'];
+    if (message.data['action'] == 'CANCEL' && id != null) {
+      NotificationController.cancelLocalNotification(id);
+    } else {
+      NotificationController.showLocalNotification(message: message);
+    }
+  } catch (e) {
+    debugPrint('Error handling notification: $e');
+  }
+}
+
 void main() async {
 
   ///ensureInitialized() is used in the main() to ensure that the Flutter framework is fully initialized before running any code that relies on it.
@@ -31,14 +50,18 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  /// FCM background handler
+  FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
+
   ///Initializing notification
   await NotificationController.initializeLocalNotifications();
 
   ///Dependency Injection.
   await initDependencies();
 
+  /// AuthHttpClient Initialization
   AuthHttpClient.initialize(
-    serverBaseUrl: ServerConstant.baseUrl, // Your ServerConstant.baseUrl
+    serverBaseUrl: ServerConstant.baseUrl,
     refreshEndpoint: ServerConstant.refreshTokenEndpoint,
     navKey: navigatorKey,
   );
