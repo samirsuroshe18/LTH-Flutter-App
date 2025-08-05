@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 
 class PdfService {
   static Future<bool> downloadLocationPDF(String id, String locationName, BuildContext context) async {
@@ -57,96 +58,61 @@ class PdfService {
   }
 
   static Future<bool> _savePDFToDownloads(List<int> bytes, String fileName, BuildContext context) async {
+    File? tempFile;
     try {
-      // Request MANAGE_EXTERNAL_STORAGE permission for Android
-      if (Platform.isAndroid) {
-        PermissionStatus status = await Permission.manageExternalStorage.status;
+      await [
+        Permission.storage,
+      ].request();
 
-        if (!status.isGranted) {
-          // Show custom dialog explaining why we need this permission
-          bool? userConsent = await _showPermissionDialog(context);
+      // 🔹 Write the PDF to a temporary file
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = '${tempDir.path}/$fileName';
+      tempFile = File(tempPath);
+      await tempFile.writeAsBytes(bytes);
 
-          if (userConsent == true) {
-            status = await Permission.manageExternalStorage.request();
-
-            if (!status.isGranted) {
-              return false;
-            }
-          } else {
-            return false;
-          }
-        }
+      // 🔹 Verify file exists before proceeding
+      if (!await tempFile.exists()) {
+        debugPrint('Temporary file was not created successfully');
+        return false;
       }
 
-      // Get the appropriate directory
-      Directory? directory;
-      if (Platform.isAndroid) {
-        try {
-          // Try to use Downloads directory
-          directory = Directory('/storage/emulated/0/Download');
+      debugPrint('Temporary file created at: $tempPath');
+      debugPrint('File size: ${await tempFile.length()} bytes');
 
-          // Check if directory exists and is writable
-          if (!await directory.exists()) {
-            directory = await getExternalStorageDirectory();
-          } else {
-            // Test write permission by creating a temporary file
-            try {
-              final testFile = File('${directory.path}/.test_write_permission');
-              await testFile.writeAsString('test');
-              await testFile.delete();
-            } catch (e) {
-              directory = await getExternalStorageDirectory();
-            }
-          }
-        } catch (e) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else {
-        directory = await getApplicationDocumentsDirectory();
-      }
+      // 🔹 Ensure MediaStore is initialized before using
+      await MediaStore.ensureInitialized();
 
-      if (directory != null) {
-        final file = File('${directory.path}/$fileName');
-        await file.writeAsBytes(bytes);
+      // 🔹 Set the app folder BEFORE using MediaStore
+      MediaStore.appFolder = "Niyamitra"; // Replace with your actual app name
 
+      // 🔹 Save using MediaStore
+      final mediaStore = MediaStore();
+      final result = await mediaStore.saveFile(
+        tempFilePath: tempPath,
+        dirType: DirType.download,
+        dirName: DirName.download,
+      );
+
+      if (result != null) {
+        debugPrint('Saved PDF to: ${result.uri}');
         return true;
       } else {
+        debugPrint('MediaStore returned null');
         return false;
       }
     } catch (e) {
-      debugPrint('Error saving PDF: $e');
+      debugPrint('MediaStore error: $e');
       return false;
+    } finally {
+      // 🔹 Clean up temporary file in finally block
+      if (tempFile != null && await tempFile.exists()) {
+        try {
+          await tempFile.delete();
+          debugPrint('Temporary file cleaned up successfully');
+        } catch (deleteError) {
+          debugPrint('Failed to delete temporary file: $deleteError');
+        }
+      }
     }
-  }
-
-  // Helper method to show permission dialog
-  static Future<bool?> _showPermissionDialog(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('File Access Permission'),
-          content: const Text(
-              'This app needs permission to manage files to save PDFs to your Downloads folder. '
-                  'You will be redirected to Settings where you can grant "Allow management of all files" permission.'
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Grant Permission'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

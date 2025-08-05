@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:complaint_portal/common_widgets/custom_snackbar.dart';
 import 'package:complaint_portal/features/notice/bloc/notice_bloc.dart';
 import 'package:complaint_portal/features/notice/models/notice_board_model.dart';
@@ -353,7 +354,7 @@ class _UpdateNoticeScreenState extends State<UpdateNoticeScreen> {
                           ],
                         ),
                         SizedBox(height: 16),
-                        if (_selectedImage != null || _imageUrl!=null && _imageUrl!='N/A') ...[
+                        if (_selectedImage != null || _imageUrl!=null && _imageUrl!.isNotEmpty && _imageUrl!='N/A') ...[
                           Container(
                             height: 200,
                             width: double.infinity,
@@ -363,7 +364,12 @@ class _UpdateNoticeScreenState extends State<UpdateNoticeScreen> {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: _selectedImage != null ? Image.file(_selectedImage!, fit: BoxFit.cover) : Image.network(_imageUrl!, fit: BoxFit.cover),
+                              child: _selectedImage != null ? Image.file(_selectedImage!, fit: BoxFit.cover) : CachedNetworkImage(
+                                  imageUrl: _imageUrl ?? '',
+                                errorWidget: (context, url, error){
+                                    return Icon(Icons.error, size: 32);
+                                },
+                              ),
                             ),
                           ),
                           SizedBox(height: 12),
@@ -444,7 +450,7 @@ class _UpdateNoticeScreenState extends State<UpdateNoticeScreen> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    'JPG, PNG up to 10MB',
+                                    'JPG, PNG up to 1MB',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[400],

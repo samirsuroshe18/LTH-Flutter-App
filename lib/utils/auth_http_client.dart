@@ -313,10 +313,8 @@ class AuthHttpClient {
 
         // Update tokens in SharedPreferences
         final newAccessToken = responseData['data']['accessToken'].toString();
-        final newRefreshToken = responseData['data']['refreshToken'].toString();
 
         await prefs.setString('accessToken', newAccessToken);
-        await prefs.setString('refreshToken', newRefreshToken);
 
         return true;
       }

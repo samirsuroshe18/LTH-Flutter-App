@@ -569,15 +569,12 @@ class _SectorAdminHomeState extends State<SectorAdminHome> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Image.asset('assets/images/lth_logo.png', color: Colors.white,),
+        padding: EdgeInsets.only(left: 10),
+        // child: Image.asset('assets/images/lth_logo.png', color: Colors.white,),
+        child: Image.asset('assets/images/app_log_transparent.png', color: Colors.white,),
       ),
       title: Text(
-        'ComplaintDesk',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-        ),
+        'Niyamitra',
       ),
       backgroundColor: Colors.blue[700],
       foregroundColor: Colors.white,
